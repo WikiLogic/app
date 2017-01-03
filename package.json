@@ -1,0 +1,36 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "To plan!",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "run-p build:* serve watch:*",
+    "build:sass": "node-sass components -o static --importer node_modules/node-sass-glob-importer/dist/cli.js --output-style compressed",
+    "build:js": "rollup -c",
+    "watch:sass": "sane \"npm run build:sass\" components --glob=components/**/*.scss",
+    "watch:js": "sane \"npm run build:js\" components --glob=components/**/*.js",
+    "serve": "node ui-server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "jquery": "^3.1.1",
+    "mongoose": "^4.7.1",
+    "npm-run-all": "^3.1.2"
+  },
+  "devDependencies": {
+    "hbs": "^4.0.1",
+    "hbs-utils": "0.0.4",
+    "node-sass": "^4.0.0",
+    "node-sass-glob-importer": "^3.0.0",
+    "rollup-plugin-babel": "^2.7.1",
+    "rollup-plugin-commonjs": "^6.0.0",
+    "rollup-plugin-node-resolve": "^2.0.0",
+    "rollup-plugin-uglify": "^1.0.1",
+    "sane": "^1.4.1",
+    "tape": "^4.6.3"
+  }
+}
