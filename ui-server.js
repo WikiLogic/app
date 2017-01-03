@@ -5,26 +5,32 @@
 var express    = require('express');        // call express
 var app        = express();                 // define our app using express
 var path       = require('path');
-var hbs = require('hbs');
-var hbsutils = require('hbs-utils')(hbs);
-var port = process.env.PORT || 3001;
+var exphbs     = require('express-handlebars');
+var port       = process.env.PORT || 3001;
 
+//db connections: n n
 
 app.use(express.static(path.join(__dirname,'static')));
 
-//================================= Templating Engine https://www.npmjs.com/package/hbs
-app.set('view engine', 'hbs');
-app.set('views', __dirname + '/pages');
-hbs.registerPartials(__dirname + '/components'); // registar any simple partials
 
-//more complex partials need to be named (don't have globbing set up)
-hbs.registerPartials(__dirname + '/components/alchemy');
+//================================= Templating Engine https://www.npmjs.com/package/express-handlebars
+var hbs = exphbs.create({ 
+    layoutsDir: 'views/layouts/',
+    partialsDir: 'views/components/',
+    defaultLayout: 'default',
+    extname: '.hbs'
+});
+app.engine('hbs', hbs.engine);
+app.set('view engine', 'hbs');
+
 
 //================================= Routes
 var uiRouter = express.Router();
 
 uiRouter.get('/', function(req, res){
-    res.render('index', { title: 'Hey', message: 'Hello there!' });
+    //To render with a different layout:  
+    //res.render('home', { title: 'Hey', message: 'Hello there!', layout: 'layouts/file-name.hbs' });
+    res.render('home', { title: 'Hey', message: 'Hello there!' });
 });
 
 uiRouter.get('/statistics', function(re, res){

@@ -6,10 +6,12 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "run-p build:* serve watch:*",
-    "build:sass": "node-sass components -o static --importer node_modules/node-sass-glob-importer/dist/cli.js --output-style compressed",
+    "build:sass-base": "node-sass base-styles -o static --importer node_modules/node-sass-glob-importer/dist/cli.js --output-style compressed",
+    "build:sass-components": "node-sass views/components -o static --importer node_modules/node-sass-glob-importer/dist/cli.js --output-style compressed",
     "build:js": "rollup -c",
-    "watch:sass": "sane \"npm run build:sass\" components --glob=**/*.scss",
-    "watch:js": "sane \"npm run build:js\" components --glob=**/*.js",
+    "watch:sass-base": "sane \"npm run build:sass-base\" base-styles --glob=**/*.scss",
+    "watch:sass-components": "sane \"npm run build:sass-components\" views/components --glob=**/*.scss",
+    "watch:js": "sane \"npm run build:js\" views/components --glob=**/*.js",
     "serve": "node ui-server.js"
   },
   "author": "",
@@ -22,8 +24,7 @@
     "npm-run-all": "^3.1.2"
   },
   "devDependencies": {
-    "hbs": "^4.0.1",
-    "hbs-utils": "0.0.4",
+    "express-handlebars": "^3.0.0",
     "node-sass": "^4.0.0",
     "node-sass-glob-importer": "^3.0.0",
     "rollup-plugin-babel": "^2.7.1",
