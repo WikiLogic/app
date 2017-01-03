@@ -15,7 +15,9 @@ app.use(express.static(path.join(__dirname,'static')));
 //================================= Templating Engine https://www.npmjs.com/package/hbs
 app.set('view engine', 'hbs');
 app.set('views', __dirname + '/pages');
-hbs.registerPartials(__dirname + '/components');
+hbs.registerPartials(__dirname + '/components'); // registar any simple partials
+
+//more complex partials need to be named (don't have globbing set up)
 hbs.registerPartials(__dirname + '/components/alchemy');
 
 //================================= Routes
