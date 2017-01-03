@@ -1,4 +1,26 @@
+
+
 To plan!
+
+---
+
+##Local set up
+
+####Install:
+ 
+ - `npm install`
+ - `npm install -g rollup`
+
+Some thing that might help if it doesn't work straight off:
+
+ - Check you have a recent version of Node.js
+ - `npm install -g node-sass`
+ - `npm rebuild node-sass`
+
+####Run:
+
+ - `npm start`
+
 
 ---
 
