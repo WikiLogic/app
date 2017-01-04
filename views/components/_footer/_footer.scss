@@ -1,0 +1,15 @@
+.footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: rem(14);
+
+    &__col {
+        padding: rem($pad-small);
+        flex-grow: 1;
+
+        text-align: left;
+        + .footer__col {
+            text-align: right;
+        }
+    }   
+}

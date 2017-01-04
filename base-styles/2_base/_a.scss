@@ -1,7 +1,10 @@
 .a, a {
 	text-decoration: none;
-	color: $WL_Blue;
+	color: $link-blue;
+	padding-bottom: 2px;
+	border-bottom: 1px solid rgba($link-blue, 0.1);
 	&:hover {
-		color: lighten($WL_Blue, 10%);
+		border-bottom: 1px solid $link-blue;
+		//border-bottom: 1px solid $link-hover;
 	}
 }

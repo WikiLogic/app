@@ -1,0 +1,11 @@
+.language-selector {
+
+    &__current {
+        font-family: $serif;
+        color: white;
+    }
+
+    &__dropdown {
+        display: none;
+    }
+}

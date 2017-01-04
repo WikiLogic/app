@@ -9,7 +9,27 @@
 </head>
 <body>
 
-  {{{body}}}
+  <header class="header">
+
+    <div class="header__col">
+      {{> site-flag/site-flag }}
+    </div>
+    <div class="header__col header__col--search">
+      {{> search/search }}
+    </div>
+    <div class="header__col">
+      {{> language-selector/language-selector }}
+    </div>
+    
+  </header>
+
+  <main class="main">
+
+    {{{body}}}
+
+  </main>
+
+  {{> _footer/footer }}
 
   <script type="text/javascript" src="alchemy-vendor.js"></script>
   <script type="text/javascript" src="alchemy-plugin.js"></script>

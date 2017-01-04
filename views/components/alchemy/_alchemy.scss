@@ -114,6 +114,7 @@
 }
 
 svg {
+  background: white !important;
   position: absolute;
   left: 0;
   cursor: -webkit-grab;
@@ -122,53 +123,22 @@ svg {
   color: #333;
 }
 
-.node {
-  cursor: pointer;
+.edge path {
+  fill: none;
 }
 
-.node text.root {
-  font-size: 32px;
+.edge .edge-handler {
+  stroke: transparent;
+  fill: none;
 }
 
-.node text {
+.edge text {
   display: none;
   fill: white;
   font-weight: 200;
   text-anchor: middle;
   z-index: 1000;
   text-shadow: 1px 1px #333, -1px 1px #333, 1px -1px #333, -1px -1px #333;
-}
-
-.node.active {
-  opacity: 1;
-}
-
-.node.active.selected text {
-  display: block;
-}
-
-.node.active:hover text {
-  display: block;
-}
-
-defs #arrow path {
-  stroke: #CCC;
-  stroke-opacity: 0.2;
-  fill: #CCC;
-  opacity: 1;
-}
-
-.edge text {
-  stroke-width: 0;
-}
-
-.edge .edge-handler {
-  fill: none;
-  stroke: none;
-}
-
-.edge .edge-line {
-  fill: none;
 }
 
 .edge.active text {
@@ -176,8 +146,8 @@ defs #arrow path {
   fill: white;
   font-weight: 200;
   text-anchor: middle;
-  text-shadow: 1px 1px #333, -1px 1px #333, 1px -1px #333, -1px -1px #333;
   z-index: 1000;
+  text-shadow: 1px 1px #333, -1px 1px #333, 1px -1px #333, -1px -1px #333;
 }
 
 .edge.active:hover,
@@ -190,13 +160,8 @@ defs #arrow path {
   display: block;
 }
 
-.edge.active.highlight text {
-  display: block;
-}
-
 #zoom-controls {
-  background-color: transparent;
-  background-image: url("images/maze-black.png");
+  background-color: rgba(0,0,0,0.3);
   border-top-right-radius: 3px;
   border-bottom-right-radius: 3px;
   box-shadow: 0 0 5px rgba(255,255,255,0.3);
@@ -234,10 +199,9 @@ defs #arrow path {
 }
 
 .fa-caret-right,
-.fa-caret-down,
-.fa-search {
+.fa-caret-down {
   margin: 0 5px;
-  color: #e89619;
+  color: #68b9fe;
 }
 
 #search {
@@ -252,24 +216,40 @@ defs #arrow path {
 }
 
 #search input {
-  background-color: black;
-  border: none;
+  background-color: transparent;
+  border: thin dashed #68B9FE;
   font-size: 20px;
-  color: white;
   padding-left: 0.5em;
+  margin-top: -1px;
+}
+
+#search input::-webkit-input-placeholder {
+  color: white;
+}
+
+#search input:-moz-placeholder {
+  color: white;
+}
+
+#search input::-moz-placeholder {
+  color: white;
+}
+
+#search input:-ms-input-placeholder {
+  color: white;
 }
 
 #search .search-icon {
   height: 22px;
-  background-color: #000;
-  border-color: #000;
-  border-right-color: #111;
+  background-color: transparent;
+  border: thin dashed #68B9FE;
+  color: white;
 }
 
 #stats {
   padding: 0.5em 1em;
   background-color: transparent;
-  border-bottom: thin dashed #e89619;
+  border-bottom: thin dashed #68b9fe;
 }
 
 #stats #stats-header {
@@ -311,7 +291,7 @@ defs #arrow path {
 #stats #node-stats-graph .no-data,
 #stats #edge-stats-graph .no-data {
   margin: 30px 0;
-  color: #e89619;
+  color: #68b9fe;
 }
 
 #stats .badge {
@@ -323,7 +303,7 @@ defs #arrow path {
 #editor {
   padding: 0.5em 1em;
   background-color: transparent;
-  border-bottom: thin dashed #e89619;
+  border-bottom: thin dashed #68b9fe;
 }
 
 #editor h3 {
@@ -341,8 +321,8 @@ defs #arrow path {
   color: white;
 }
 
-#editor #element-options .property,
-#editor #element-options #add-property-form {
+#editor #element-options .node-property,
+#editor #element-options #node-add-property {
   display: -webkit-inline-flex;
   display: inline-flex;
   margin: 4px 0;
@@ -350,7 +330,7 @@ defs #arrow path {
 }
 
 #editor #element-options .property-value,
-#editor #element-options #add-property-form #add-property #add-prop-value {
+#editor #element-options #node-add-property #add-property #node-add-prop-value {
   border: thin rgba(255,255,255,0.2) solid;
   border-left: none;
   background-color: black;
@@ -361,26 +341,51 @@ defs #arrow path {
 }
 
 #editor #element-options .property-name,
-#editor #element-options #add-property-form #add-property #add-prop-key {
+#editor #element-options #node-add-property #add-property #node-add-prop-key {
   text-align: center;
   font-weight: 200;
   cursor: default;
   background: #2E2E2E;
   border: thin transparent solid;
-  color: #e89619;
+  color: #68b9fe;
   border-right: none;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
 
+#editor #element-options #node-add-property #add-property {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-grow: 2;
+  flex-grow: 2;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+}
+
+#editor #element-options #node-add-property #add-property #node-add-prop-value {
+  text-align: center;
+  width: 100%;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 4px;
+  border: thin rgba(255,255,255,0.2) solid;
+}
+
+#editor #element-options #node-add-property #add-property #node-add-prop-key {
+  cursor: text;
+  width: 100%;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 0;
+}
+
 #editor #element-options input[type="submit"],
 #editor #element-options #update-properties {
-  color: #e89619;
+  color: #68b9fe;
   border-top-right-radius: 4px;
   border-bottom-right-radius: 4px;
   width: auto;
   background: rgba(255,255,255,0.1);
-  border: thin solid #e89619;
+  border: thin solid #68b9fe;
   text-align: center;
 }
 
@@ -404,41 +409,15 @@ defs #arrow path {
   margin-bottom: 20px;
 }
 
-#editor #element-options #add-property-form #add-property {
-  display: -webkit-flex;
-  display: flex;
-  -webkit-flex-grow: 2;
-  flex-grow: 2;
-  -webkit-flex-direction: column;
-  flex-direction: column;
-}
-
-#editor #element-options #add-property-form #add-property #add-prop-value {
-  text-align: center;
-  width: 100%;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-  border-bottom-left-radius: 4px;
-  border: thin rgba(255,255,255,0.2) solid;
-}
-
-#editor #element-options #add-property-form #add-property #add-prop-key {
-  cursor: text;
-  width: 100%;
-  border-top-left-radius: 4px;
-  border-bottom-left-radius: 0;
-}
-
 #editor #editor-interactions.active {
-  color: #e89619;
+  color: #68b9fe;
 }
 
 #editor #editor-interactions.inactive {
   color: white;
 }
 
-#editor #node-editor.enabled,
-#editor #edge-editor.enabled {
+#editor #node-editor.enabled {
   -webkit-animation: fadeIn 1s linear;
   animation: fadeIn 1s linear;
 }
@@ -457,7 +436,7 @@ defs #arrow path {
 }
 
 #control-dash-wrapper.initial #dash-toggle {
-  color: #e89619;
+  color: #68b9fe;
   -webkit-animation: 4s pulse linear;
   animation: 4s pulse linear;
 }
@@ -470,7 +449,7 @@ defs #arrow path {
 }
 
 #control-dash-wrapper.off-canvas #dash-toggle {
-  color: #e89619;
+  color: #68b9fe;
   -webkit-animation: 4s pulse linear;
   animation: 4s pulse linear;
 }
@@ -485,11 +464,11 @@ defs #arrow path {
 }
 
 #control-dash-wrapper.on-canvas #dash-toggle {
-  color: rgba(232,150,25,0.6);
+  color: rgba(104,185,254,0.6);
 }
 
 #control-dash-wrapper.on-canvas #dash-toggle:hover {
-  color: #e89619;
+  color: #68b9fe;
   -webkit-animation: 4s pulse linear;
   animation: 4s pulse linear;
 }
@@ -497,8 +476,7 @@ defs #arrow path {
 #control-dash-wrapper #control-dash {
   overflow-x: hidden;
   overflow-y: scroll;
-  background-color: transparent;
-  background-image: url("images/maze-black.png");
+  background-color: rgba(0,0,0,0.3);
   padding: 0;
   height: inherit;
   z-index: 5;
@@ -511,8 +489,7 @@ defs #arrow path {
 
 #control-dash-wrapper #dash-toggle {
   z-index: 5;
-  background-color: transparent;
-  background-image: url("images/maze-black.png");
+  background-color: rgba(0,0,0,0.3);
   border-top-right-radius: 3px;
   border-bottom-right-radius: 3px;
   box-shadow: 0 0 5px rgba(255,255,255,0.3);
@@ -549,32 +526,39 @@ defs #arrow path {
   border-radius: 0;
 }
 
-#clustering {
-  padding: 0.5em 1em;
+.node {
   cursor: pointer;
-  color: white;
-  border-bottom: thin dashed #E89619;
 }
 
-#clustering #cluster_control_header,
-#clustering #cluster-key-container {
-  padding: 10px 10px 0 10px;
+.node text.root {
+  font-size: 32px;
 }
 
-#clustering #cluster-key {
-  color: #333;
-  background-color: #000;
-  border-radius: 4px;
-  border: thin solid #333;
-  text-align: center;
-  display: inline-block;
-  width: 100%;
+.node text {
+  display: none;
+  fill: white;
+  font-weight: 200;
+  text-anchor: middle;
+  z-index: 1000;
+  text-shadow: 1px 1px #333, -1px 1px #333, 1px -1px #333, -1px -1px #333;
+}
+
+.node.active {
+  opacity: 1;
+}
+
+.node.active.selected text {
+  display: block;
+}
+
+.node.active:hover text {
+  display: block;
 }
 
 #filters {
   padding: 0.5em 1em;
   background-color: transparent;
-  border-bottom: thin dashed #e89619;
+  border-bottom: thin dashed #68b9fe;
   color: white;
 }
 
@@ -655,13 +639,14 @@ defs #arrow path {
 }
 
 #filters .disabled:hover {
-  color: #fdc670;
+  color: #68b9fe;
 }
 
 .alchemy {
   position: relative;
   min-height: 300px;
-}
+  max-width: 100%;
+} 
 
 .alchemy #search form {
   z-index: 2;
