@@ -1,7 +1,12 @@
+//a linking to root
 .site-flag {
     color: white;
-    padding: rem(20);
+    margin: rem(8) 0;
     text-align: center;
+    display: block;
+    &:hover {
+        //border-bottom: 0;
+    }
 
     &__title {
         font-family: $serif;
