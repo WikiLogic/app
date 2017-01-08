@@ -24,7 +24,9 @@ var some_data = {
 
 export default {
     init: function(){
-        alchemy.begin({"dataSource": some_data})
-        console.log('Alchemy initted!');
+        if (typeof alchemy != 'undefined') {
+            alchemy.begin({"dataSource": some_data})
+            console.log('Alchemy initted!');
+        }
     }
 }
