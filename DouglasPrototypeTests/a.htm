@@ -30,7 +30,7 @@
 
     // copy ngraph to almende/vis format
     ngraph.forEachNode(function (node) {
-      nodes.push({ id: node.id, label: 'test'});
+      nodes.push({ id: node.id, label: node.data});
     });
 
     ngraph.forEachLink(function (link) {
