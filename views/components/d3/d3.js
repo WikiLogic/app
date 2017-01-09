@@ -3,7 +3,7 @@
 
 
 export default {
-    init: function(){
+    init: function () {
         if (d3) {
             var width = 600,
                 height = 500;
@@ -12,47 +12,41 @@ export default {
                 .size([width, height])
                 .on("tick", tick);
 
-            var svg = d3.select("#d3").append("svg")
+            var svg = d3.select("body").append("svg")
                 .attr("width", width)
-                .attr("height", height)
-                .on("click", explicitlyPosition);
+                .attr("height", height);
 
             var link = svg.selectAll(".link"),
                 node = svg.selectAll(".node");
 
+    //             node.append("text")
+    //   .attr("dx", 12)
+    //   .attr("dy", ".35em")
+    //   .text(function(d) { return 'gg' });
+
             function tick() {
+                link.attr("x1", function (d) { return d.source.x; })
+                    .attr("y1", function (d) { return d.source.y; })
+                    .attr("x2", function (d) { return d.target.x; })
+                    .attr("y2", function (d) { return d.target.y; });
 
-
-            link.attr("x1", function(d) { return d.source.x; })
-                .attr("y1", function(d) { return d.source.y; })
-                .attr("x2", function(d) { return d.target.x; })
-                .attr("y2", function(d) { return d.target.y; });
-
-            node.attr("cx", function(d) { return d.x; })
-                .attr("cy", function(d) { return d.y; });
-            }
-
-            function explicitlyPosition() {
-                node.each(function(d) {
-                    d.px = Math.random() * width;
-                    d.py = Math.random() * height;
-                });
-                force.resume();
+                node.attr("cx", function (d) { return d.x; })
+                    .attr("cy", function (d) { return d.y; });
             }
 
             var graph = {
-            "nodes": [
-                {"x": 100, "y": 250, "fixed": true},
-                {"x": 200, "y": 200, "fixed": true},
-                {"x": 200, "y": 300, "fixed": true},
-                {"x": 300, "y": 250, "fixed": true}
-            ],
-            "links": [
-                {"source":  0, "target":  1},
-                {"source":  0, "target":  2},
-                {"source":  1, "target":  3},
-                {"source":  2, "target":  3}
-            ]
+                "nodes": [
+                    { "x": 100, "y": 250, "fixed": true},
+                    { "x": 200, "y": 200, "fixed": true },
+                    { "x": 200, "y": 300, "fixed": true },
+                    { "x": 300, "y": 250, "fixed": true }
+                ],
+                "links": [
+                    { "source": 0, "target": 1 },
+                    { "source": 0, "target": 2 },
+                    { "source": 1, "target": 3 },
+                    { "source": 2, "target": 3 }
+                ]
             };
 
 
@@ -68,9 +62,10 @@ export default {
             node = node.data(graph.nodes)
                 .enter().append("circle")
                 .attr("class", "node")
-                .attr("r", 12)
-                .call(force.drag());
-            console.log('D3 initted!');
+                .attr("r", 12);
+
+                
+            //.call(force.drag());
         }
     }
 }
