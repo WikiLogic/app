@@ -343,13 +343,16 @@ export default {
     init: function () {
         if (document.getElementById('d3v4')) {
             
+            //normal js - find the width of the d3v4 element & set the height based on that.
             var width = document.getElementById('d3v4').offsetWidth,
                 height = width * 0.75;
-                
+            
+            //create the svg & set it's width and height.
             var svg = d3.select("#d3v4").append("svg")
                 .attr("width", width)
                 .attr("height", height);
 
+                
             var color = d3.scaleOrdinal(d3.schemeCategory20);
 
             var simulation = d3.forceSimulation()
