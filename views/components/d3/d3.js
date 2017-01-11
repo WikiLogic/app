@@ -4,7 +4,8 @@
 
 export default {
     init: function () {
-        if (d3) {
+        
+        if (document.getElementById('d3')) {
             console.log('d3 initted!');
             var width = 300,
                 height = 500;
