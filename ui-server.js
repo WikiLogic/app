@@ -28,9 +28,19 @@ app.set('view engine', 'hbs');
 var uiRouter = express.Router();
 
 uiRouter.get('/', function(req, res){
-    //To render with a different layout:  
-    //res.render('home', { title: 'Hey', message: 'Hello there!', layout: 'layouts/file-name.hbs' });
-    res.render('home', { title: 'Hey', message: 'Hello there!' });
+    res.render('home', { 
+        title: 'Wikilogic', 
+        tagline: 'Rational exploration.',
+        data: {}
+    });
+});
+
+uiRouter.get('/lang', function(re, res){
+    res.render('lang', { 
+        title: 'Wikilogic', 
+        tagline: 'Rational exploration.',
+        data: {}
+    });
 });
 
 uiRouter.get('/statistics', function(re, res){

@@ -4,7 +4,7 @@ import commonjs from 'rollup-plugin-commonjs';
 import uglify from 'rollup-plugin-uglify';
 
 export default {
-  entry: 'views/components/main.js',
+  entry: 'views/main.js',
   format: 'cjs',
   plugins: [ 
     babel(),
