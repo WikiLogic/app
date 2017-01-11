@@ -43,6 +43,14 @@ uiRouter.get('/lang', function(re, res){
     });
 });
 
+uiRouter.get('/alchemy', function(req, res){
+    res.render('alchemy', { title: 'Hey', message: 'Hello there!' });
+});
+
+uiRouter.get('/d3', function(req, res){
+    res.render('d3', { title: 'Hey', message: 'Hello there!' });
+});
+
 uiRouter.get('/statistics', function(re, res){
 
 });
