@@ -5,6 +5,7 @@
 export default {
     init: function () {
         if (d3) {
+            console.log('d3 initted!');
             var width = 600,
                 height = 500;
 
@@ -12,7 +13,7 @@ export default {
                 .size([width, height])
                 .on("tick", tick);
 
-            var svg = d3.select("body").append("svg")
+            var svg = d3.select("#d3").append("svg")
                 .attr("width", width)
                 .attr("height", height);
 
