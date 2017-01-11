@@ -85,21 +85,33 @@ export default {
                     .selectAll("line")
                     .data(graph.links)
                     .enter().append("line")
-                    .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
+                    .attr("stroke", function(d) {
+                        console.log('d', d);
+                        if (d.type == "OPPOSES") {
+                            return 'red';
+                        }
+
+                        if (d.type == "SUPPORTS") {
+                            return 'green';
+                        } 
+
+                        return 'black'; 
+                    });
 
                 var node = svg.append("g")
                     .attr("class", "nodes")
                     .selectAll("circle")
                     .data(graph.nodes)
-                    .enter().append("circle")
-                    .attr("r", 5)
+                    .enter().append("g")
+                    .attr("class", "node")
                     .call(d3.drag()
                         .on("start", dragstarted)
                         .on("drag", dragged)
                         .on("end", dragended));
 
-                node.append("title")
-                    .text(function(d) { return d.id; });
+                node.append("text")
+                    .text(function(d) { return d.id; })
+                    .attr("class", "node__title");
 
                 simulation
                     .nodes(graph.nodes)
@@ -116,8 +128,9 @@ export default {
                         .attr("y2", function(d) { return d.target.y; });
 
                     node
-                        .attr("cx", function(d) { return d.x; })
-                        .attr("cy", function(d) { return d.y; });
+                        .attr("transform", function(d) { 
+                            return "translate(" + d.x + "," + d.y + ")"; 
+                        });
                 }
             //});
 
