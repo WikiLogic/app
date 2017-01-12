@@ -8,11 +8,23 @@
   stroke-width: 1.5px;
 }
 
-.node {
+.claim-node {
 
   //text
   &__title {
     fill: black;
     stroke: none;
+    font-size: 12px;
+    text-anchor: middle;
+  }
+}
+
+.argument-node {
+
+  &__title {
+    fill: #444;
+    stroke: none;
+    font-size: 10px;
+    text-anchor: middle;
   }
 }

@@ -107,19 +107,35 @@ export default {
                     .selectAll("circle")
                     .data(graph.nodes)
                     .enter().append("g")
-                    .attr("class", "node")
+                    .attr("class", function(d){
+                        if (d.type == "claim"){ return "claim-node"; }
+                        if (d.type == "argument"){ return "argument-node"; }
+                    })
                     .call(d3.drag()
                         .on("start", dragstarted)
                         .on("drag", dragged)
                         .on("end", dragended));
 
+                node.append("switch")
+                    .append("foreignObject")//needs a width and height
+                        .attr("width", 200)
+                        .attr("height", 100)
+                        .attr("class", function(d){
+                            if (d.type == "claim") { return "claim-node__title"; }
+                            return "argument-node__title"; 
+                        })
+                        .append("xhtml:p")
+                            .html(function(d){
+                                if (d.type == "claim") { return d.text; }
+                                return d.id;         
+                            });
+                /* fallback to text to support old ie - future thing
                 node.append("text")
                     .text(function(d) { 
                         if (d.type == "claim") { return d.text; }
                         return d.id; 
                     })
-                    .attr("class", "node__title");
-
+                */
                 simulation
                     .nodes(graph.nodes)
                     .on("tick", ticked);
