@@ -2,32 +2,31 @@
 
 var graph = {
   "nodes": [
-    {"id": "claimOriginal", "type": "claim", "fx": 100, "fy": 100 },
+    {"id": "claimOriginal", "type": "claim", "fx": 100, "fy": 100, "text": "Prisoners should get rehabilitation." },
     {"id": "argForRehab", "type": "argument" },
-    {"id": "claimRehabIsCheap", "type": "claim" },
-    {"id": "claimCheapIsGood", "type": "claim" },
-    {"id": "binaryClaim", "type": "claim"},
+    {"id": "claimRehabIsCheap", "type": "claim", "text": "The cost of rehabilitation is less than the cost of prison." },
+    {"id": "claimCheapIsGood", "type": "claim", "text": "The lowest cost option is best." },
+    {"id": "binaryClaim", "type": "claim", "text": "There is only a choice between prison or rehab." },
     {"id": "argAgainstBinary", "type": "argument"},
-    {"id": "claimExecutionIsPossible", "type": "claim"},
-    {"id": "claimReleaseIsPossible", "type": "claim"},
+    {"id": "claimExecutionIsPossible", "type": "claim", "text": "It is possible to execute prisoners." },
+    {"id": "claimReleaseIsPossible", "type": "claim", "text": "It is possible to release prisoners." },
     {"id": "argAgainstPossibleRelease", "type": "argument"},
-    {"id": "claimCannotRelease", "type": "claim"},
+    {"id": "claimCannotRelease", "type": "claim", "text": "Releasing prisoners is not an option for society." },
     {"id": "argAgainstNoRelease", "type": "argument"},
-    {"id": "claimUnacceptable", "type": "claim"},
-    {"id": "claimHighChanec", "type": "claim"},
-    {"id": "claimModified", "type": "claim"},
+    {"id": "claimUnacceptable", "type": "claim", "text": "Commiting crimes is unacceptable in society." },
+    {"id": "claimHighChanec", "type": "claim", "text": "There is a high chance a criminal will commit a crime again if nothing changes in their situation." },
+    {"id": "claimModified", "type": "claim", "text": "Prisoners should get rehabilitation for the good of society." },
     {"id": "argAgainstModifiedRehab", "type": "argument"},
-    {"id": "expandedBinaryClaim", "type": "claim"},
+    {"id": "expandedBinaryClaim", "type": "claim", "text": "There is only a choice between prison or rehab when considering whats best for society." },
     {"id": "argAgainstNewBinary", "type": "argument"},
     {"id": "expandedBinaryClaim", "type": "claim"},
-    {"id": "claimCantRelease", "type": "claim"},
-    {"id": "claimExecutionImmoral", "type": "claim"},
-    {"id": "claimFlatEarth", "type": "claim"},
-    {"id": "claimSphericalEarth", "type": "claim"},
-    {"id": "claimConicalEarth", "type": "claim"},
+    {"id": "claimExecutionImmoral", "type": "claim", "text": "Executing prisoners is immoral." },
+    {"id": "claimFlatEarth", "type": "claim", "text": "The Earth is flat." },
+    {"id": "claimSphericalEarth", "type": "claim", "text": "The Earth is spherical." },
+    {"id": "claimConicalEarth", "type": "claim", "text": "The Earth is a cone." },
     {"id": "earthExclusive", "type": "mutualExclusiveGroup"},
-    {"id": "claimNorthNegative", "type": "claim"},
-    {"id": "claimNorthPositive", "type": "claim"}
+    {"id": "claimNorthNegative", "type": "claim", "text": "The North Pole has a negative charge." },
+    {"id": "claimNorthPositive", "type": "claim", "text": "The North Pole has a positive charge." }
   ],
   "links": [
     {"source": "argForRehab", "target": "claimOriginal", "type": "SUPPORTS"},
@@ -48,7 +47,7 @@ var graph = {
     {"source": "claimCheapIsGood", "target": "argAgainstModifiedRehab", "type": "USED_IN"},
     {"source": "expandedBinaryClaim", "target": "argAgainstModifiedRehab", "type": "USED_IN"},
     {"source": "argAgainstNewBinary", "target": "expandedBinaryClaim", "type": "OPPOSES"},
-    {"source": "claimCantRelease", "target": "argAgainstNewBinary", "type": "USED_IN"},
+    {"source": "claimCannotRelease", "target": "argAgainstNewBinary", "type": "USED_IN"},
     {"source": "claimExecutionImmoral", "target": "argAgainstNewBinary", "type": "USED_IN"},
     {"source": "claimFlatEarth", "target": "earthExclusive", "type": "MUTUAL_EXCLUSION_LINK"},
     {"source": "claimSphericalEarth", "target": "earthExclusive", "type": "MUTUAL_EXCLUSION_LINK"},
@@ -115,7 +114,10 @@ export default {
                         .on("end", dragended));
 
                 node.append("text")
-                    .text(function(d) { return d.id; })
+                    .text(function(d) { 
+                        if (d.type == "claim") { return d.text; }
+                        return d.id; 
+                    })
                     .attr("class", "node__title");
 
                 simulation
