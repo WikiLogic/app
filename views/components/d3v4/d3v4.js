@@ -2,7 +2,7 @@
 
 var graph = {
   "nodes": [
-    {"id": "claimOriginal", "type": "claim", "fx": 100, "fy": 100, "text": "Prisoners should get rehabilitation." },
+    {"id": "claimOriginal", "type": "claim", "fx": 500, "fy": 100, "text": "Prisoners should get rehabilitation." },
     {"id": "argForRehab", "type": "argument" },
     {"id": "claimRehabIsCheap", "type": "claim", "text": "The cost of rehabilitation is less than the cost of prison." },
     {"id": "claimCheapIsGood", "type": "claim", "text": "The lowest cost option is best." },
@@ -76,17 +76,18 @@ export default {
                     .forceLink()
                     .id(function(d) { 
                         return d.id; 
-                    })
+                }))
+                .force("charge", d3.forceManyBody().distanceMin(600))
+                .force("center", d3.forceCenter(width / 2, height / 2));
+                    /*
                     .distance(function(d) {
                         if ( d.type == "USED_IN") { return 10; }
                         return 100;
                      })
                      .strength(function(d){
-                        if ( d.type == "USED_IN") { return 1; }
+                        if ( d.type == "USED_IN") { return 0.5; }
                         return 0.1;
-                     }))
-                .force("charge", d3.forceManyBody())
-                .force("center", d3.forceCenter(width / 2, height / 2));
+                     }))*/
 
             // d3.json(graph, function(error, graph) {
             //     if (error) throw error;
@@ -107,10 +108,7 @@ export default {
                     .selectAll("circle")
                     .data(graph.nodes)
                     .enter().append("g")
-                    .attr("class", function(d){
-                        if (d.type == "claim"){ return "claim-node"; }
-                        if (d.type == "argument"){ return "argument-node"; }
-                    })
+                    .attr("class", function(d){ return d.type + "-node"; })
                     .call(d3.drag()
                         .on("start", dragstarted)
                         .on("drag", dragged)
@@ -120,11 +118,9 @@ export default {
                     .append("foreignObject")//needs a width and height
                         .attr("width", 200)
                         .attr("height", 100)
-                        .attr("class", function(d){
-                            if (d.type == "claim") { return "claim-node__title"; }
-                            return "argument-node__title"; 
-                        })
-                        .append("xhtml:p")
+                        .attr("class", function(d){ return d.type + "-node__foreign-object"; })
+                        .append("xhtml:div")
+                            .attr("class", function(d){ return d.type + "-node__title"; })
                             .html(function(d){
                                 if (d.type == "claim") { return d.text; }
                                 return d.id;         
