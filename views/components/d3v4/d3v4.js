@@ -36,8 +36,8 @@ var graph = {
     {"source": "binaryClaim", "target": "argForRehab", "type": "USED_IN"},
     {"source": "argAgainstBinary", "target": "binaryClaim", "type": "OPPOSES"},
     {"source": "argAgainstBinary", "target": "binaryClaim", "type": "OPPOSES"},
-    {"source": "claimExecutionIsPossible", "target": "binaryClaim", "type": "USED_IN"},
-    {"source": "claimReleaseIsPossible", "target": "binaryClaim", "type": "USED_IN"},
+    {"source": "claimExecutionIsPossible", "target": "argAgainstBinary", "type": "USED_IN"},
+    {"source": "claimReleaseIsPossible", "target": "argAgainstBinary", "type": "USED_IN"},
     {"source": "argAgainstPossibleRelease", "target": "claimReleaseIsPossible", "type": "OPPOSES"},
     {"source": "claimCannotRelease", "target": "argAgainstPossibleRelease", "type": "USED_IN"},
     {"source": "argAgainstNoRelease", "target": "claimCannotRelease", "type": "OPPOSES"},
@@ -73,7 +73,19 @@ export default {
 
             //https://github.com/d3/d3-force
             var simulation = d3.forceSimulation()
-                .force("link", d3.forceLink().id(function(d) { return d.id; }))
+                .force("link", d3
+                    .forceLink()
+                    .id(function(d) { 
+                        return d.id; 
+                    })
+                    .distance(function(d) {
+                        if ( d.type == "USED_IN") { return 10; }
+                        return 100;
+                     })
+                     .strength(function(d){
+                        if ( d.type == "USED_IN") { return 1; }
+                        return 0.1;
+                     }))
                 .force("charge", d3.forceManyBody())
                 .force("center", d3.forceCenter(width / 2, height / 2));
 
@@ -86,15 +98,8 @@ export default {
                     .data(graph.links)
                     .enter().append("line")
                     .attr("stroke", function(d) {
-                        console.log('d', d);
-                        if (d.type == "OPPOSES") {
-                            return 'red';
-                        }
-
-                        if (d.type == "SUPPORTS") {
-                            return 'green';
-                        } 
-
+                        if (d.type == "OPPOSES") {  return 'red';  }
+                        if (d.type == "SUPPORTS") { return 'green';  } 
                         return 'black'; 
                     });
 
