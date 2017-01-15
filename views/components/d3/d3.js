@@ -4,11 +4,85 @@
 
 export default {
     init: function () {
-        
+
         if (document.getElementById('d3')) {
             console.log('d3 initted!');
             var width = 300,
                 height = 500;
+
+
+
+
+
+            // The query
+            var query = {
+                "statements": [{
+                    "statement": "MATCH p=(n)-->(m)<--(k),(n)--(k) RETURN p Limit 100",
+                    "resultDataContents": ["graph", "row"]
+                }]
+            };
+
+            function txUrl() {
+                var url = ("http://localhost:7474").replace(/\/db\/data.*/, "");
+                return url + "/db/data/transaction/commit";
+            }
+            var me = {
+                executeQuery: function (query, params, cb) {
+                    $.ajax(txUrl(), {
+                        type: "POST",
+                        data: JSON.stringify({
+                            statements: [{
+                                statement: query,
+                                parameters: params || {},
+                                resultDataContents: ["row", "graph"]
+                            }]
+                        }),
+                        contentType: "application/json",
+                        error: function (err) {
+                            cb(err);
+                        },
+                        success: function (res) {
+                            if (res.errors.length > 0) {
+                                cb(res.errors);
+                            } else {
+                                // var cols = res.results[0].columns;
+                                // var rows = res.results[0].data.map(function (row) {
+                                //     var r = {};
+                                //     cols.forEach(function (col, index) {
+                                //         r[col] = row.row[index];
+                                //     });
+                                //     return r;
+                                // });
+                                var nodes = [];
+                                var rels = [];
+                                var labels = [];
+                                res.results[0].data.forEach(function (row) {
+                                    row.graph.nodes.forEach(function (n) {
+                                        var found = nodes.filter(function (m) { return m.id == n.id; }).length > 0;
+                                        if (!found) {
+                                            var nodee = n.properties || {}; nodee.id = n.id; nodee.type = n.labels[0];
+                                            nodes.push(nodee);
+                                            if (labels.indexOf(nodee.type) == -1) labels.push(nodee.type);
+                                        }
+                                    });
+                                    rels = rels.concat(row.graph.relationships.map(function (x) { return { source: x.startNode, target: x.endNode, caption: x.type } }));
+                                });
+                                //cb(null, { table: rows, graph: { nodes: nodes, edges: rels }, labels: labels });
+
+                                var graph = { nodes: nodes, edges: rels };
+                                return graph;
+
+                            }
+                        }
+                    });
+                }
+            };
+
+
+
+
+
+
 
             var force = d3.layout.force()
                 .size([width, height])
@@ -21,10 +95,9 @@ export default {
             var link = svg.selectAll(".link"),
                 node = svg.selectAll(".node");
 
-            //             node.append("text")
-            //   .attr("dx", 12)
-            //   .attr("dy", ".35em")
-            //   .text(function(d) { return 'gg' });
+
+
+
 
             function tick() {
                 link.attr("x1", function (d) { return d.source.x; })
@@ -36,20 +109,21 @@ export default {
                     .attr("cy", function (d) { return d.y; });
             }
 
-            var graph = {
-                "nodes": [
-                    { "x": 100, "y": 250, "fixed": true },
-                    { "x": 200, "y": 200, "fixed": true },
-                    { "x": 200, "y": 300, "fixed": true },
-                    { "x": 300, "y": 250, "fixed": true }
-                ],
-                "links": [
-                    { "source": 0, "target": 1 },
-                    { "source": 0, "target": 2 },
-                    { "source": 1, "target": 3 },
-                    { "source": 2, "target": 3 }
-                ]
-            };
+            var graph = me();
+            // {
+            //     "nodes": [
+            //         { "x": 100, "y": 250, "fixed": true },
+            //         { "x": 200, "y": 200, "fixed": true },
+            //         { "x": 200, "y": 300, "fixed": true },
+            //         { "x": 300, "y": 250, "fixed": true }
+            //     ],
+            //     "links": [
+            //         { "source": 0, "target": 1 },
+            //         { "source": 0, "target": 2 },
+            //         { "source": 1, "target": 3 },
+            //         { "source": 2, "target": 3 }
+            //     ]
+            // };
 
 
             /*
@@ -66,13 +140,6 @@ export default {
                 .attr("linkDistance", 900)
                 .attr("class", "link");
 
-
-
-            // node = node.data(graph.nodes)
-            //     .enter().append("circle")
-            //     .attr("class", "node")
-            //     .attr("r", 12);
-
             var gnodes = svg.selectAll('g.gnode')
                 .data(graph.nodes)
                 .enter()
@@ -81,8 +148,8 @@ export default {
 
             // Add one circle in each group
             node = gnodes.append("circle")
-                .attr("class", "node")
-                .attr("r", 50);
+                .attr("class", "node");
+                //.attr("r", 50);
 
             // Append the labels to each group
             var labels = gnodes.append("text")
@@ -91,7 +158,17 @@ export default {
                 .text(function (d) { return 'data' + d.data; });
 
 
-            //.call(force.drag());
+
+
+
+
+
+
+
+
+
+
+
         }
     }
 }
