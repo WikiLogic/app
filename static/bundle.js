@@ -167,31 +167,31 @@ var d3v4graph = {
     init: function () {
         if (document.getElementById('d3v4')) {
 
-            //normal js - find the width of the d3v4 element & set the height based on that.
-            var width = document.getElementById('d3v4').offsetWidth,
-                height = width * 0.75;
-
-            //create the svg & set it's width and height.
-            var svg = d3.select("#d3v4").append("svg").attr("width", width).attr("height", height);
-
-            //https://github.com/d3/d3-force
-            var simulation = d3.forceSimulation().force("link", d3.forceLink().id(function (d) {
-                return d.id;
-            })).force("charge", d3.forceManyBody().distanceMin(600)).force("center", d3.forceCenter(width / 2, height / 2));
-            /*
-            .distance(function(d) {
-                if ( d.type == "USED_IN") { return 10; }
-                return 100;
-             })
-             .strength(function(d){
-                if ( d.type == "USED_IN") { return 0.5; }
-                return 0.1;
-             }))*/
-
-            // d3.json(graph, function(error, graph) {
-            //     if (error) throw error;
-
+            var simulation;
             var buildGraph = function () {
+                //normal js - find the width of the d3v4 element & set the height based on that.
+                var width = document.getElementById('d3v4').offsetWidth,
+                    height = width * 0.75;
+
+                //create the svg & set it's width and height.
+                var svg = d3.select("#d3v4").append("svg").attr("width", width).attr("height", height);
+
+                //https://github.com/d3/d3-force
+                simulation = d3.forceSimulation().force("link", d3.forceLink().id(function (d) {
+                    return d.id;
+                })).force("charge", d3.forceManyBody().distanceMin(600)).force("center", d3.forceCenter(width / 2, height / 2));
+                /*
+                .distance(function(d) {
+                    if ( d.type == "USED_IN") { return 10; }
+                    return 100;
+                })
+                .strength(function(d){
+                    if ( d.type == "USED_IN") { return 0.5; }
+                    return 0.1;
+                }))*/
+
+                // d3.json(graph, function(error, graph) {
+                //     if (error) throw error;
                 var link = svg.append("g").attr("class", "links").selectAll("line").data(graph.links).enter().append("line").attr("stroke", function (d) {
                     if (d.type == "OPPOSES") {
                         return 'red';
@@ -253,25 +253,28 @@ var d3v4graph = {
                 var nodes = [];
                 var links = [];
 
+                //format the raw data to be as we need it
                 res.data.forEach(function (result, index) {
-                    //result.node.id = index;
-                    graph.nodes.push({
+                    //=========== format the node
+                    var node = {
                         id: String(index),
-                        type: result.node.labels[0],
                         text: result.node.properties.body
-                    });
+                    };
+                    if (result.node.labels.length > 0) {
+                        node.type = result.node.labels[0].toLowerCase();
+                    }
+                    nodes.push(node);
 
-                    // result.link.source = String(result.link._fromId);
-                    // result.link.target = String(result.link._toId);
-                    graph.links.push({
+                    //----------- format the link
+                    links.push({
                         source: String(result.link._fromId),
                         target: String(result.link._toId),
                         type: result.link.type
                     });
                 });
 
-                //graph.nodes = nodes;
-                //graph.links = links;
+                graph.nodes = nodes;
+                graph.links = links;
 
                 //but for now, I'll just pass you're mock data
                 buildGraph();
