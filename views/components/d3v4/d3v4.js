@@ -165,20 +165,28 @@ export default {
 
                 res.data.forEach(function(result, index){
                     //result.node.id = index;
-                    nodes.push({"id": index});
+                    graph.nodes.push({
+                        id: String(index),
+                        type: result.node.labels[0],
+                        text: result.node.properties.body
+                    });
                     
                     // result.link.source = String(result.link._fromId);
                     // result.link.target = String(result.link._toId);
-                    links.push({source: result.link._fromId, target: result.link._toId});
+                    graph.links.push({
+                        source: String(result.link._fromId), 
+                        target: String(result.link._toId),
+                        type: result.link.type
+                    });
                 })
                 
 
-                graph.nodes = nodes;
-                graph.links = links;
-                console.log("graph", JSON.stringify(graph));
+                //graph.nodes = nodes;
+                //graph.links = links;
 
                 //but for now, I'll just pass you're mock data
                 buildGraph();
+                console.log('graph', graph);
 
             });
 
