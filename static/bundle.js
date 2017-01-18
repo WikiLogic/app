@@ -294,19 +294,27 @@ var d3v4graph = {
 
                 res.data.forEach(function (result, index) {
                     //result.node.id = index;
-                    nodes.push({ "id": index });
+                    graph$1.nodes.push({
+                        id: String(index),
+                        type: result.node.labels[0],
+                        text: result.node.properties.body
+                    });
 
                     // result.link.source = String(result.link._fromId);
                     // result.link.target = String(result.link._toId);
-                    links.push({ source: result.link._fromId, target: result.link._toId });
+                    graph$1.links.push({
+                        source: String(result.link._fromId),
+                        target: String(result.link._toId),
+                        type: result.link.type
+                    });
                 });
 
-                graph$1.nodes = nodes;
-                graph$1.links = links;
-                console.log("graph", JSON.stringify(graph$1));
+                //graph.nodes = nodes;
+                //graph.links = links;
 
                 //but for now, I'll just pass you're mock data
                 buildGraph();
+                console.log('graph', graph$1);
             });
 
             function dragstarted(d) {
