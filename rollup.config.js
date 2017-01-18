@@ -14,7 +14,7 @@ export default {
       browser: true,
     }),
     commonjs(),
-    uglify()
   ],
   dest: './static/bundle.js'
 };
+    //uglify()
