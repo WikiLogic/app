@@ -1,5 +1,9 @@
 "use strict";
 
+var graph = {
+    nodes: [],
+    links: []
+};
 
 
 export default {
@@ -103,7 +107,7 @@ export default {
             From my understanding, this force instance is how you call the d3 library and tell it to turn your info into the setup asked for 
             in our case we want the layout called 'force'
             */
-            var buildGraph = function(graph){
+            var buildGraph = function(){
                 force
                     .nodes(graph.nodes)
                     .links(graph.links)
@@ -160,15 +164,25 @@ export default {
             //=============================== Get the data!
             
             //done is called once the ajax call has heard back from the server so by putting buildGraph inside, it only runs when the call returns
-            $.ajax( "http://localhost:3030/claim").done(function(res) {
-                console.log("tada!", res);
-                //currently the data that is coming back isn't split into nodes and links, 
-                //we need to format it at some point, either here, on the server or in the cypher query (I'd guess the query is probably the fastest)
-                //when that's done we can do:
-                //  buildGraph(res); 
+            $.ajax( "http://localhost:3030/all").done(function(res) {
                 
+                var nodes = [];
+                var links = [];
+
+                res.data.forEach(function(result){
+                    nodes.push(result.node);
+                    result.link.source = String(result.link._fromId);
+                    result.link.target = String(result.link._toId);
+                    links.push(result.link);
+                })
+                
+
+                graph.nodes = nodes;
+                graph.links = links;
+                console.log("graph", graph);
+
                 //but for now, I'll just pass you're mock data
-                buildGraph(douglasMockData);
+                buildGraph();
 
             });
         }

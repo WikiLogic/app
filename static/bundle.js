@@ -24,6 +24,11 @@ var alchemy$1 = {
     }
 };
 
+var graph = {
+    nodes: [],
+    links: []
+};
+
 var d3graph = {
     init: function () {
 
@@ -128,7 +133,7 @@ var d3graph = {
             From my understanding, this force instance is how you call the d3 library and tell it to turn your info into the setup asked for 
             in our case we want the layout called 'force'
             */
-            var buildGraph = function (graph) {
+            var buildGraph = function () {
                 force.nodes(graph.nodes).links(graph.links).start();
 
                 link = link.data(graph.links).enter().append("line").attr("linkDistance", 900).attr("class", "link");
@@ -166,21 +171,30 @@ var d3graph = {
             //=============================== Get the data!
 
             //done is called once the ajax call has heard back from the server so by putting buildGraph inside, it only runs when the call returns
-            $.ajax("http://localhost:3030/claim").done(function (res) {
-                console.log("tada!", res);
-                //currently the data that is coming back isn't split into nodes and links, 
-                //we need to format it at some point, either here, on the server or in the cypher query (I'd guess the query is probably the fastest)
-                //when that's done we can do:
-                //  buildGraph(res); 
+            $.ajax("http://localhost:3030/all").done(function (res) {
+
+                var nodes = [];
+                var links = [];
+
+                res.data.forEach(function (result) {
+                    nodes.push(result.node);
+                    result.link.source = String(result.link._fromId);
+                    result.link.target = String(result.link._toId);
+                    links.push(result.link);
+                });
+
+                graph.nodes = nodes;
+                graph.links = links;
+                console.log("graph", graph);
 
                 //but for now, I'll just pass you're mock data
-                buildGraph(douglasMockData);
+                buildGraph();
             });
         }
     }
 };
 
-var graph = {
+var graph$1 = {
     "nodes": [{ "id": "claimOriginal", "type": "claim", "fx": 500, "fy": 100, "text": "Prisoners should get rehabilitation." }, { "id": "argForRehab", "type": "argument" }, { "id": "claimRehabIsCheap", "type": "claim", "text": "The cost of rehabilitation is less than the cost of prison." }, { "id": "claimCheapIsGood", "type": "claim", "text": "The lowest cost option is best." }, { "id": "binaryClaim", "type": "claim", "text": "There is only a choice between prison or rehab." }, { "id": "argAgainstBinary", "type": "argument" }, { "id": "claimExecutionIsPossible", "type": "claim", "text": "It is possible to execute prisoners." }, { "id": "claimReleaseIsPossible", "type": "claim", "text": "It is possible to release prisoners." }, { "id": "argAgainstPossibleRelease", "type": "argument" }, { "id": "claimCannotRelease", "type": "claim", "text": "Releasing prisoners is not an option for society." }, { "id": "argAgainstNoRelease", "type": "argument" }, { "id": "claimUnacceptable", "type": "claim", "text": "Commiting crimes is unacceptable in society." }, { "id": "claimHighChanec", "type": "claim", "text": "There is a high chance a criminal will commit a crime again if nothing changes in their situation." }, { "id": "claimModified", "type": "claim", "text": "Prisoners should get rehabilitation for the good of society." }, { "id": "argAgainstModifiedRehab", "type": "argument" }, { "id": "expandedBinaryClaim", "type": "claim", "text": "There is only a choice between prison or rehab when considering whats best for society." }, { "id": "argAgainstNewBinary", "type": "argument" }, { "id": "expandedBinaryClaim", "type": "claim" }, { "id": "claimExecutionImmoral", "type": "claim", "text": "Executing prisoners is immoral." }, { "id": "claimFlatEarth", "type": "claim", "text": "The Earth is flat." }, { "id": "claimSphericalEarth", "type": "claim", "text": "The Earth is spherical." }, { "id": "claimConicalEarth", "type": "claim", "text": "The Earth is a cone." }, { "id": "earthExclusive", "type": "mutualExclusiveGroup" }, { "id": "claimNorthNegative", "type": "claim", "text": "The North Pole has a negative charge." }, { "id": "claimNorthPositive", "type": "claim", "text": "The North Pole has a positive charge." }],
     "links": [{ "source": "argForRehab", "target": "claimOriginal", "type": "SUPPORTS" }, { "source": "claimRehabIsCheap", "target": "argForRehab", "type": "USED_IN" }, { "source": "claimCheapIsGood", "target": "argForRehab", "type": "USED_IN" }, { "source": "binaryClaim", "target": "argForRehab", "type": "USED_IN" }, { "source": "argAgainstBinary", "target": "binaryClaim", "type": "OPPOSES" }, { "source": "argAgainstBinary", "target": "binaryClaim", "type": "OPPOSES" }, { "source": "claimExecutionIsPossible", "target": "argAgainstBinary", "type": "USED_IN" }, { "source": "claimReleaseIsPossible", "target": "argAgainstBinary", "type": "USED_IN" }, { "source": "argAgainstPossibleRelease", "target": "claimReleaseIsPossible", "type": "OPPOSES" }, { "source": "claimCannotRelease", "target": "argAgainstPossibleRelease", "type": "USED_IN" }, { "source": "argAgainstNoRelease", "target": "claimCannotRelease", "type": "OPPOSES" }, { "source": "claimUnacceptable", "target": "argAgainstNoRelease", "type": "USED_IN" }, { "source": "claimHighChanec", "target": "argAgainstNoRelease", "type": "USED_IN" }, { "source": "argAgainstModifiedRehab", "target": "claimModified", "type": "OPPOSES" }, { "source": "claimRehabIsCheap", "target": "argAgainstModifiedRehab", "type": "USED_IN" }, { "source": "claimCheapIsGood", "target": "argAgainstModifiedRehab", "type": "USED_IN" }, { "source": "expandedBinaryClaim", "target": "argAgainstModifiedRehab", "type": "USED_IN" }, { "source": "argAgainstNewBinary", "target": "expandedBinaryClaim", "type": "OPPOSES" }, { "source": "claimCannotRelease", "target": "argAgainstNewBinary", "type": "USED_IN" }, { "source": "claimExecutionImmoral", "target": "argAgainstNewBinary", "type": "USED_IN" }, { "source": "claimFlatEarth", "target": "earthExclusive", "type": "MUTUAL_EXCLUSION_LINK" }, { "source": "claimSphericalEarth", "target": "earthExclusive", "type": "MUTUAL_EXCLUSION_LINK" }, { "source": "claimConicalEarth", "target": "earthExclusive", "type": "MUTUAL_EXCLUSION_LINK" }, { "source": "claimNorthNegative", "target": "claimNorthPositive", "type": "MUTUALLY_EXCLUDES" }]
 };
@@ -213,7 +227,7 @@ var d3v4graph = {
             // d3.json(graph, function(error, graph) {
             //     if (error) throw error;
 
-            var link = svg.append("g").attr("class", "links").selectAll("line").data(graph.links).enter().append("line").attr("stroke", function (d) {
+            var link = svg.append("g").attr("class", "links").selectAll("line").data(graph$1.links).enter().append("line").attr("stroke", function (d) {
                 if (d.type == "OPPOSES") {
                     return 'red';
                 }
@@ -223,7 +237,7 @@ var d3v4graph = {
                 return 'black';
             });
 
-            var node = svg.append("g").attr("class", "nodes").selectAll("circle").data(graph.nodes).enter().append("g").attr("class", function (d) {
+            var node = svg.append("g").attr("class", "nodes").selectAll("circle").data(graph$1.nodes).enter().append("g").attr("class", function (d) {
                 return d.type + "-node";
             }).call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended));
 
@@ -245,9 +259,9 @@ var d3v4graph = {
                     return d.id; 
                 })
             */
-            simulation.nodes(graph.nodes).on("tick", ticked);
+            simulation.nodes(graph$1.nodes).on("tick", ticked);
 
-            simulation.force("link").links(graph.links);
+            simulation.force("link").links(graph$1.links);
 
             function ticked() {
                 link.attr("x1", function (d) {
