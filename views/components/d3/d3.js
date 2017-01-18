@@ -1,7 +1,5 @@
 "use strict";
 
-
-
 export default {
     init: function () {
 
@@ -9,10 +7,6 @@ export default {
             console.log('d3 initted!');
             var width = 300,
                 height = 500;
-
-
-
-
 
             // The query
             var query = {
@@ -26,6 +20,7 @@ export default {
                 var url = ("http://localhost:7474").replace(/\/db\/data.*/, "");
                 return url + "/db/data/transaction/commit";
             }
+
             var me = {
                 executeQuery: function (query, params, cb) {
                     $.ajax(txUrl(), {
@@ -44,7 +39,8 @@ export default {
                         success: function (res) {
                             if (res.errors.length > 0) {
                                 cb(res.errors);
-                            } else {
+                            }
+                            else {
                                 // var cols = res.results[0].columns;
                                 // var rows = res.results[0].data.map(function (row) {
                                 //     var r = {};
@@ -52,37 +48,37 @@ export default {
                                 //         r[col] = row.row[index];
                                 //     });
                                 //     return r;
-                                // });
+                                //});
                                 var nodes = [];
                                 var rels = [];
                                 var labels = [];
-                                res.results[0].data.forEach(function (row) {
-                                    row.graph.nodes.forEach(function (n) {
-                                        var found = nodes.filter(function (m) { return m.id == n.id; }).length > 0;
-                                        if (!found) {
-                                            var nodee = n.properties || {}; nodee.id = n.id; nodee.type = n.labels[0];
-                                            nodes.push(nodee);
-                                            if (labels.indexOf(nodee.type) == -1) labels.push(nodee.type);
-                                        }
+                                res.results[0].data.forEach(
+                                    function (row) 
+                                    {
+                                        row.graph.nodes.forEach(
+                                            function (n) 
+                                            {
+                                                var found = nodes.filter(function (m) { return m.id == n.id; }).length > 0;
+                                                if (!found) 
+                                                {
+                                                    var nodee = n.properties || {};
+                                                    nodee.id = n.id;
+                                                    nodee.type = n.labels[0];
+                                                    nodes.push(nodee);
+                                                    if (labels.indexOf(nodee.type) == -1) labels.push(nodee.type);
+                                                }
+                                            });
+                                        rels = rels.concat(row.graph.relationships.map(function (x) { return { source: x.startNode, target: x.endNode, caption: x.type } }));
                                     });
-                                    rels = rels.concat(row.graph.relationships.map(function (x) { return { source: x.startNode, target: x.endNode, caption: x.type } }));
-                                });
                                 //cb(null, { table: rows, graph: { nodes: nodes, edges: rels }, labels: labels });
 
                                 var graph = { nodes: nodes, edges: rels };
                                 return graph;
-
                             }
                         }
                     });
                 }
             };
-
-
-
-
-
-
 
             var force = d3.layout.force()
                 .size([width, height])
@@ -94,10 +90,6 @@ export default {
 
             var link = svg.selectAll(".link"),
                 node = svg.selectAll(".node");
-
-
-
-
 
             function tick() {
                 link.attr("x1", function (d) { return d.source.x; })
@@ -125,7 +117,6 @@ export default {
             //     ]
             // };
 
-
             /*
             From my understanding, this force instance is how you call the d3 library and tell it to turn your info into the setup asked for 
             in our case we want the layout called 'force'
@@ -148,27 +139,14 @@ export default {
 
             // Add one circle in each group
             node = gnodes.append("circle")
-                .attr("class", "node");
-                //.attr("r", 50);
+                .attr("class", "node")
+                .attr("r", 50);
 
             // Append the labels to each group
             var labels = gnodes.append("text")
                 .attr("dx", function (d) { return d.x; })
                 .attr("dy", function (d) { return d.y; })
                 .text(function (d) { return 'data' + d.data; });
-
-
-
-
-
-
-
-
-
-
-
-
-
         }
     }
 }
