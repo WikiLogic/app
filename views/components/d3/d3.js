@@ -170,7 +170,10 @@ export default {
                 var links = [];
 
                 res.data.forEach(function(result){
+
+                    result.node.id = result.node._id;
                     nodes.push(result.node);
+                    
                     result.link.source = String(result.link._fromId);
                     result.link.target = String(result.link._toId);
                     links.push(result.link);

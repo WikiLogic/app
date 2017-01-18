@@ -92,6 +92,7 @@ export default {
             // d3.json(graph, function(error, graph) {
             //     if (error) throw error;
 
+            var buildGraph = function(){
                 var link = svg.append("g")
                     .attr("class", "links")
                     .selectAll("line")
@@ -152,6 +153,35 @@ export default {
                         });
                 }
             //});
+            };
+
+            $.ajax( "http://localhost:3030/all").done(function(res) {
+                
+                console.log('all', res);
+
+                var nodes = [];
+                var links = [];
+
+
+                res.data.forEach(function(result, index){
+                    //result.node.id = index;
+                    nodes.push({"id": index});
+                    
+                    // result.link.source = String(result.link._fromId);
+                    // result.link.target = String(result.link._toId);
+                    links.push({source: result.link._fromId, target: result.link._toId});
+                })
+                
+
+                graph.nodes = nodes;
+                graph.links = links;
+                console.log("graph", JSON.stringify(graph));
+
+                //but for now, I'll just pass you're mock data
+                buildGraph();
+
+            });
+
 
             function dragstarted(d) {
                 if (!d3.event.active) simulation.alphaTarget(0.3).restart();

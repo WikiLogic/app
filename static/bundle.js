@@ -177,7 +177,10 @@ var d3graph = {
                 var links = [];
 
                 res.data.forEach(function (result) {
+
+                    result.node.id = result.node._id;
                     nodes.push(result.node);
+
                     result.link.source = String(result.link._fromId);
                     result.link.target = String(result.link._toId);
                     links.push(result.link);
@@ -227,58 +230,84 @@ var d3v4graph = {
             // d3.json(graph, function(error, graph) {
             //     if (error) throw error;
 
-            var link = svg.append("g").attr("class", "links").selectAll("line").data(graph$1.links).enter().append("line").attr("stroke", function (d) {
-                if (d.type == "OPPOSES") {
-                    return 'red';
-                }
-                if (d.type == "SUPPORTS") {
-                    return 'green';
-                }
-                return 'black';
-            });
-
-            var node = svg.append("g").attr("class", "nodes").selectAll("circle").data(graph$1.nodes).enter().append("g").attr("class", function (d) {
-                return d.type + "-node";
-            }).call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended));
-
-            node.append("switch").append("foreignObject") //needs a width and height
-            .attr("width", 200).attr("height", 100).attr("class", function (d) {
-                return d.type + "-node__foreign-object";
-            }).append("xhtml:div").attr("class", function (d) {
-                return d.type + "-node__title";
-            }).html(function (d) {
-                if (d.type == "claim") {
-                    return d.text;
-                }
-                return d.id;
-            });
-            /* fallback to text to support old ie - future thing
-            node.append("text")
-                .text(function(d) { 
-                    if (d.type == "claim") { return d.text; }
-                    return d.id; 
-                })
-            */
-            simulation.nodes(graph$1.nodes).on("tick", ticked);
-
-            simulation.force("link").links(graph$1.links);
-
-            function ticked() {
-                link.attr("x1", function (d) {
-                    return d.source.x;
-                }).attr("y1", function (d) {
-                    return d.source.y;
-                }).attr("x2", function (d) {
-                    return d.target.x;
-                }).attr("y2", function (d) {
-                    return d.target.y;
+            var buildGraph = function () {
+                var link = svg.append("g").attr("class", "links").selectAll("line").data(graph$1.links).enter().append("line").attr("stroke", function (d) {
+                    if (d.type == "OPPOSES") {
+                        return 'red';
+                    }
+                    if (d.type == "SUPPORTS") {
+                        return 'green';
+                    }
+                    return 'black';
                 });
 
-                node.attr("transform", function (d) {
-                    return "translate(" + d.x + "," + d.y + ")";
+                var node = svg.append("g").attr("class", "nodes").selectAll("circle").data(graph$1.nodes).enter().append("g").attr("class", function (d) {
+                    return d.type + "-node";
+                }).call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended));
+
+                node.append("switch").append("foreignObject") //needs a width and height
+                .attr("width", 200).attr("height", 100).attr("class", function (d) {
+                    return d.type + "-node__foreign-object";
+                }).append("xhtml:div").attr("class", function (d) {
+                    return d.type + "-node__title";
+                }).html(function (d) {
+                    if (d.type == "claim") {
+                        return d.text;
+                    }
+                    return d.id;
                 });
-            }
-            //});
+                /* fallback to text to support old ie - future thing
+                node.append("text")
+                    .text(function(d) { 
+                        if (d.type == "claim") { return d.text; }
+                        return d.id; 
+                    })
+                */
+                simulation.nodes(graph$1.nodes).on("tick", ticked);
+
+                simulation.force("link").links(graph$1.links);
+
+                function ticked() {
+                    link.attr("x1", function (d) {
+                        return d.source.x;
+                    }).attr("y1", function (d) {
+                        return d.source.y;
+                    }).attr("x2", function (d) {
+                        return d.target.x;
+                    }).attr("y2", function (d) {
+                        return d.target.y;
+                    });
+
+                    node.attr("transform", function (d) {
+                        return "translate(" + d.x + "," + d.y + ")";
+                    });
+                }
+                //});
+            };
+
+            $.ajax("http://localhost:3030/all").done(function (res) {
+
+                console.log('all', res);
+
+                var nodes = [];
+                var links = [];
+
+                res.data.forEach(function (result, index) {
+                    //result.node.id = index;
+                    nodes.push({ "id": index });
+
+                    // result.link.source = String(result.link._fromId);
+                    // result.link.target = String(result.link._toId);
+                    links.push({ source: result.link._fromId, target: result.link._toId });
+                });
+
+                graph$1.nodes = nodes;
+                graph$1.links = links;
+                console.log("graph", JSON.stringify(graph$1));
+
+                //but for now, I'll just pass you're mock data
+                buildGraph();
+            });
 
             function dragstarted(d) {
                 if (!d3.event.active) simulation.alphaTarget(0.3).restart();
