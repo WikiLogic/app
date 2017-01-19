@@ -155,9 +155,9 @@ export default {
             //});
             };
 
-            $.ajax( "http://localhost:3030/all").done(function(res) {
+            $.ajax( "http://localhost:3030/claims/Prisoners").done(function(res) {
                 
-                console.log('all', res);
+                console.log('contains search', res);
 
                 var nodes = [];
                 var links = [];

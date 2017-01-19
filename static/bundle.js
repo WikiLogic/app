@@ -246,9 +246,9 @@ var d3v4graph = {
                 //});
             };
 
-            $.ajax("http://localhost:3030/all").done(function (res) {
+            $.ajax("http://localhost:3030/claims/Prisoners").done(function (res) {
 
-                console.log('all', res);
+                console.log('contains search', res);
 
                 var nodes = [];
                 var links = [];
@@ -301,6 +301,86 @@ var d3v4graph = {
     }
 };
 
+/* The Event Manager
+    * each type of event that is subscribed to becomes an array by the same name
+    * That array holds all the functions that have subscribed to the event
+    * So when the event fires, those functions will be run
+    * When firing an event, you can also pass in data that will be accessible to the subscribers
+    * Try not to mutate that data, you never know who else might be expecting it.
+    */
+
+var eventSubscribers = {};
+
+var addSubscriber = function (event, subscriber) {
+    if (eventSubscribers[event]) {
+        eventSubscribers[event].push(subscriber);
+    } else {
+        eventSubscribers[event] = [subscriber];
+    }
+    return eventSubscribers[event].length - 1;
+};
+
+var eventManager = {
+    subscribe: function (event, subscriber) {
+        /* Takes the name of an event to subscribe to
+            * and a function to run when that event is fired.
+            * An index number is returned. This will be needed if 
+            * the subscriber is ever to be removed. (or we could implement some other kind of id system?)
+            */
+        if (event instanceof Array) {
+            for (var e = 0; e < event.length; e++) {
+                addSubscriber(event[e], subscriber);
+            }
+        } else {
+            addSubscriber(event, subscriber);
+        }
+    },
+
+    unsubscribe: function (event, index) {
+        eventSubscribers[event].splice(index, 1);
+    },
+
+    fire: function (event, data) {
+        //console.log('EVENT:', event, data);
+        setTimeout(function () {
+            if (eventSubscribers[event]) {
+                console.log('EVENT', event, data);
+                for (var s = 0; s < eventSubscribers[event].length; s++) {
+                    //s for subscriber
+                    try {
+                        eventSubscribers[event][s](data);
+                    } catch (err) {
+                        console.error('err: ', err);
+                    }
+                }
+            }
+        }, 0);
+    }
+};
+
+var search = {
+    init: function () {
+        $('.js-search-input').on('keypress', function (e) {
+            console.log('search typing!', e);
+            if (e.keyCode == 13) {
+                //get the input value, sent it to the API
+                var term = $('.js-search-input').val();
+                console.log("term", term);
+                $.ajax("http://localhost:3030/claims/" + term).done(function (res) {
+                    if (res.data.matches.length > 0) {
+                        console.log('claims found', res.data.matches);
+                        eventManager.fire('SEARCH_RESULTS', res.data.matches);
+                    } else {
+                        console.warn('no results returned');
+                    }
+                }).error(function (err) {
+                    console.error('search error', err);
+                });
+            }
+        });
+    }
+};
+
 //rollup -> babel -> browser :)
 
 //import * as $ from '../node_modules/jquery/dist/jquery.js';
@@ -313,4 +393,5 @@ window.onload = function () {
     alchemy$1.init();
     d3graph.init();
     d3v4graph.init();
+    search.init();
 };
