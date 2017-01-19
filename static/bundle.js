@@ -343,8 +343,8 @@ var eventManager = {
     fire: function (event, data) {
         //console.log('EVENT:', event, data);
         setTimeout(function () {
+            console.group('EVENT', event, data);
             if (eventSubscribers[event]) {
-                console.log('EVENT', event, data);
                 for (var s = 0; s < eventSubscribers[event].length; s++) {
                     //s for subscriber
                     try {
@@ -354,32 +354,57 @@ var eventManager = {
                     }
                 }
             }
+            console.groupEnd();
         }, 0);
     }
 };
 
+/* All the actions (events) that can be fired
+ * Inspired by http://redux.js.org/docs/recipes/ReducingBoilerplate.html
+ * Build errors are better than run time errors
+ */
+
+var actions = {
+    USER_SEARCH_SUBMITTED: "USER_SEARCH_SUBMITTED",
+    API_SEARCH_SUBMITTED: "API_SEARCH_SUBMITTED",
+    API_SEARCH_RETURNED: "API_SEARCH_RETURNED",
+    API_SEARCH_ERRORED: "API_SEARCH_ERRORED"
+};
+
+/* Listens to any input with the class .js-search-input
+ * On enter, it fires the USER_SEARCH_SUBMITTED event along with the search term
+ */
+
 var search = {
     init: function () {
-        $('.js-search-input').on('keypress', function (e) {
-            console.log('search typing!', e);
+        $('input.js-search-input').on('keypress', function (e) {
             if (e.keyCode == 13) {
-                //get the input value, sent it to the API
+                //get the input value
                 var term = $('.js-search-input').val();
-                console.log("term", term);
-                $.ajax("http://localhost:3030/claims/" + term).done(function (res) {
-                    if (res.data.matches.length > 0) {
-                        console.log('claims found', res.data.matches);
-                        eventManager.fire('SEARCH_RESULTS', res.data.matches);
-                    } else {
-                        console.warn('no results returned');
-                    }
-                }).error(function (err) {
-                    console.error('search error', err);
-                });
+                //fire!
+                eventManager.fire(actions.USER_SEARCH_SUBMITTED, term);
+                //It's out of our hands now :) 
             }
         });
     }
 };
+
+/* This is where we talk to the WikiLogic API
+ *
+ */
+
+eventManager.subscribe(actions.USER_SEARCH_SUBMITTED, function (term) {
+
+    //tell the world we're submitting a search (for spinners and the like)
+    eventManager.fire(actions.API_SEARCH_SUBMITTED, term);
+
+    $.ajax("http://localhost:3030/claims/" + term).done(function (res) {
+        eventManager.fire(actions.API_SEARCH_RETURNED, res.data.matches);
+    }).error(function (err) {
+        eventManager.fire(actions.API_SEARCH_ERRORED, res.data.matches);
+        console.error('search error', err);
+    });
+});
 
 //rollup -> babel -> browser :)
 
