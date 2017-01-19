@@ -7,6 +7,7 @@ var app        = express();                 // define our app using express
 var path       = require('path');
 var exphbs     = require('express-handlebars');
 var port       = process.env.PORT || 3001;
+var taglines   = require('./utilities/taglines.js');
 
 //db connections: n n
 
@@ -30,7 +31,7 @@ var uiRouter = express.Router();
 uiRouter.get('/', function(req, res){
     res.render('home', { 
         title: 'Wikilogic', 
-        tagline: 'Rational exploration.',
+        tagline: taglines.giveMeOne,
         data: {}
     });
 });
