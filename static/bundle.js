@@ -398,7 +398,7 @@ eventManager.subscribe(actions.USER_SEARCH_SUBMITTED, function (term) {
     //tell the world we're submitting a search (for spinners and the like)
     eventManager.fire(actions.API_SEARCH_SUBMITTED, term);
 
-    $.ajax("http://localhost:3030/claims/" + term).done(function (res) {
+    $.ajax("http://localhost:3030/claims?search=" + term).done(function (res) {
         eventManager.fire(actions.API_SEARCH_RETURNED, res.data.matches);
     }).error(function (err) {
         eventManager.fire(actions.API_SEARCH_ERRORED, res.data.matches);
