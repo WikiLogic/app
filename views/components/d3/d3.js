@@ -112,7 +112,7 @@ export default {
 
             //=============================== Get the data!
             //done is called once the ajax call has heard back from the server so by putting buildGraph inside, it only runs when the call returns
-            $.ajax("http://localhost:3030/all").done(function (res) {
+            $.ajax("http://localhost:3030/claims/random").done(function (res) {
                 buildGraph(res);
             });
         }

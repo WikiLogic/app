@@ -1,25 +1,20 @@
 "use strict";
-
 import eventManager from '../js-helpers/eventManager.js';
+import actions from '../js-helpers/actions.js';
+
+/* Listens to any input with the class .js-search-input
+ * On enter, it fires the USER_SEARCH_SUBMITTED event along with the search term
+ */
 
 export default {
     init: function(){
-        $('.js-search-input').on('keypress', function(e){
-            console.log('search typing!', e);
+        $('input.js-search-input').on('keypress', function(e){
             if (e.keyCode == 13) {
-                //get the input value, sent it to the API
+                //get the input value
                 var term = $('.js-search-input').val();
-                console.log("term", term);
-                $.ajax( "http://localhost:3030/claims/" + term).done(function(res) {
-                    if (res.data.matches.length > 0) {
-                        console.log('claims found', res.data.matches);
-                        eventManager.fire('SEARCH_RESULTS', res.data.matches);
-                    } else {
-                        console.warn('no results returned');
-                    }
-                }).error(function(err){
-                    console.error('search error', err);
-                });
+                //fire!
+                eventManager.fire(actions.USER_SEARCH_SUBMITTED, term);
+                //It's out of our hands now :) 
             }
         });
     }

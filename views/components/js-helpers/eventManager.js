@@ -43,8 +43,8 @@ export default {
     fire: function(event, data){
         //console.log('EVENT:', event, data);
         setTimeout(function(){
+            console.group('EVENT', event, data);
             if (eventSubscribers[event]) {
-                console.log('EVENT', event, data);
                 for (var s = 0; s < eventSubscribers[event].length; s++) { //s for subscriber
                     try {
                         eventSubscribers[event][s](data);
@@ -54,6 +54,7 @@ export default {
                     }
                 }
             }
+            console.groupEnd();
         }, 0);
     }
 }
