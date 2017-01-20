@@ -33,69 +33,48 @@ export default {
 
             var buildGraph = function (res) {
 
-                // var graph =
-                //     {
-                //         "nodes": [
-                //             { "x": 100, "y": 250, "fixed": true },
-                //             { "x": 200, "y": 200, "fixed": true },
-                //             { "x": 200, "y": 300, "fixed": true },
-                //             { "x": 300, "y": 250, "fixed": true }
-                //         ],
-                //         "links": [
-                //             { "source": 0, "target": 1 },
-                //             { "source": 0, "target": 2 },
-                //             { "source": 1, "target": 3 },
-                //             { "source": 2, "target": 3 }
-                //         ]
-                //     };
-
-                // var nodes = [];
-                // var links = [];
-
-                // res.data.forEach(function (result) {
-                //     result.node.id = result.node._id;
-                //     nodes.push(result.node);
-
-                //     result.link.source = String(result.link._fromId);
-                //     result.link.target = String(result.link._toId);
-                //     links.push(result.link);
-                // })
-
-                // graph.nodes = nodes;
-                // graph.links = links;
-
-
-
                 var nodes = [];
                 var links = [];
 
-                // res.data.forEach(function (dataContainer) {
                 for (var i = 0; i < res.data.length; i++) {
+
                     var dataContainer = res.data[i];
-                    //cehck for duplciates
-                    var found = false;
-                    //nodes.filter(function (m) {console.log(m); return m._id == dataContainer.node._id; }).length > 0;
+                    console.log(res.data[i]);
+
+                    //check for duplicates
+                    var found = nodes.filter(function (m) { return m._id == dataContainer.argGroup._id; }).length > 0;
 
                     if (!found) {
-                        var newNode = dataContainer.node.properties || {};
+                        var newNode = dataContainer.argGroup.properties || {};
 
-                        console.log(dataContainer.node);
+                        console.log(dataContainer.evidence);
 
-                        newNode._id = dataContainer.node._id;
-                        newNode.type = dataContainer.node._id;
+                        newNode._id = dataContainer.argGroup._id;
+                        newNode.type = dataContainer.argGroup._id;
                         newNode.x = 0 + i * 100;
                         newNode.y = 0 + i * 100;
                         newNode.fixed = true;
-                        //newNode.text = dataContainer.node.body;
-                        console.log(newNode);
+                        newNode.index = i;
 
                         nodes.push(newNode);
 
-                        dataContainer.link.source = String(dataContainer.link._fromId);
-                        dataContainer.link.target = String(dataContainer.link._toId);
-                        links.push(dataContainer.link);
+                       // links need to convert from id to index. We add any valid link for now and later we can sort id to index conversion
+                        // if (dataContainer.evidence != null )
+                        // {
+                        //     var foundLink = links.filter(function (m) { return m._id == dataContainer.evidence._id; }).length > 0;
+                        //     if (!foundLink) {
+                        //     console.log(dataContainer.evidence);
+                        //         //links.push(dataContainer.evidence);
+                        //     }
+                        // }
                     }
                 };
+
+                // links.forEach(function (link) {
+                //     link.source = nodes.findIndex(function (m) { return m._id == link._fromId });
+                //     link.target = nodes.findIndex(function (m) { return m._id == link._toId });
+
+                //});
 
                 var graph = { nodes: nodes, links: links };
 
@@ -108,7 +87,6 @@ export default {
 
                 link = link.data(graph.links)
                     .enter().append("line")
-                    .attr("linkDistance", 900)
                     .attr("class", "link");
 
                 var gnodes = svg.selectAll('g.gnode')
@@ -137,7 +115,6 @@ export default {
             $.ajax("http://localhost:3030/all").done(function (res) {
                 buildGraph(res);
             });
-
         }
     }
 }
