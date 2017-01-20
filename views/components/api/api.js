@@ -12,9 +12,9 @@ eventManager.subscribe(actions.USER_SEARCH_SUBMITTED, function(term){
     eventManager.fire(actions.API_SEARCH_SUBMITTED, term);
 
     $.ajax( "http://localhost:3030/claims?search=" + term).done(function(res) {
-        eventManager.fire(actions.API_SEARCH_RETURNED, res.data.matches);
+        eventManager.fire(actions.API_SEARCH_RETURNED, res.data);
     }).error(function(err){
-        eventManager.fire(actions.API_SEARCH_ERRORED, res.data.matches);
+        eventManager.fire(actions.API_SEARCH_ERRORED, err);
         console.error('search error', err);
     });
 });

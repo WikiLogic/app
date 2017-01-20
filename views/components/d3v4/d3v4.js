@@ -1,5 +1,13 @@
 "use strict";
 
+import eventManager from '../js-helpers/eventManager.js';
+import actions from '../js-helpers/actions.js';
+
+eventManager.subscribe(actions.API_SEARCH_RETURNED, function(data){
+    console.log('data', data);
+
+});
+
 var graph = {
   "nodes": [
     {"id": "claimOriginal", "type": "claim", "fx": 500, "fy": 100, "text": "Prisoners should get rehabilitation." },
@@ -55,6 +63,7 @@ var graph = {
     {"source": "claimNorthNegative", "target": "claimNorthPositive", "type": "MUTUALLY_EXCLUDES"}
   ]
 };
+ 
 
 
 export default {
@@ -104,28 +113,56 @@ export default {
                         return 'black'; 
                     });
 
-                var node = svg.append("g")
+                //=========================== creating the claim nodes
+                var nodes = svg.append("g")
                     .attr("class", "nodes")
-                    .selectAll("circle")
+                    .selectAll("g")
                     .data(graph.nodes)
-                    .enter().append("g")
-                    .attr("class", function(d){ return d.type + "-node"; })
+                    .enter();
+                
+                var claimNodes = nodes
+                    .filter(function(d){
+                        if (d.type == "claim") {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    })
+                    .append("g")
+                    .attr("class", "claim-node")
                     .call(d3.drag()
                         .on("start", dragstarted)
                         .on("drag", dragged)
                         .on("end", dragended));
 
-                node.append("switch")
-                    .append("foreignObject")//needs a width and height
-                        .attr("width", 200)
-                        .attr("height", 100)
-                        .attr("class", function(d){ return d.type + "-node__foreign-object"; })
-                        .append("xhtml:div")
-                            .attr("class", function(d){ return d.type + "-node__title"; })
-                            .html(function(d){
-                                if (d.type == "claim") { return d.text; }
-                                return d.id;         
-                            });
+                    claimNodes.append("switch")
+                        .append("foreignObject")//needs a width and height
+                            .attr("width", 200)
+                            .attr("height", 50)
+                            .attr("class", "claim-node__foreign-object")
+                            .append("xhtml:div")
+                                .attr("class", "claim-node__title")
+                                .html(function(d){
+                                    console.log('claim node');
+                                    return d.body;
+                                });
+                var argumentNodes = nodes
+                    .filter(function(d){
+                        if (d.type == "argument") {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    })
+                    .append("g")
+                    .attr("class", "argument-node")
+                    .call(d3.drag()
+                        .on("start", dragstarted)
+                        .on("drag", dragged)
+                        .on("end", dragended));
+
+                    argumentNodes.append("circle")
+                        .attr("r", 5);
                 /* fallback to text to support old ie - future thing
                 node.append("text")
                     .text(function(d) { 
@@ -147,7 +184,12 @@ export default {
                         .attr("x2", function(d) { return d.target.x; })
                         .attr("y2", function(d) { return d.target.y; });
 
-                    node
+                    claimNodes
+                        .attr("transform", function(d) { 
+                            return "translate(" + d.x + "," + d.y + ")"; 
+                        });
+
+                    argumentNodes
                         .attr("transform", function(d) { 
                             return "translate(" + d.x + "," + d.y + ")"; 
                         });
@@ -155,42 +197,11 @@ export default {
             //});
             };
 
-            $.ajax( "http://localhost:3030/claims/Prisoners").done(function(res) {
+            $.ajax( "http://localhost:3030/claims?search=prison").done(function(res) {
                 
-                console.log('contains search', res);
-
-                var nodes = [];
-                var links = [];
-
-                //format the raw data to be as we need it
-                res.data.forEach(function(result, index){
-                    //=========== format the node
-                    var node = {
-                        id: String(index),
-                        text: result.node.properties.body
-                    };
-                    if (result.node.labels.length > 0) {
-                        node.type = result.node.labels[0].toLowerCase();
-                    }
-                    nodes.push(node);
-                    
-                    //----------- format the link
-                    links.push({
-                        source: String(result.link._fromId), 
-                        target: String(result.link._toId),
-                        type: result.link.type
-                    });
-                        
-
-                })
-                
-
-                graph.nodes = nodes;
-                graph.links = links;
-
-                //but for now, I'll just pass you're mock data
-                buildGraph();
+                graph = res.data;
                 console.log('graph', graph);
+                buildGraph();
 
             });
 
