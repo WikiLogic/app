@@ -214,11 +214,25 @@ var actions = {
     API_REQUEST_BY_ID_ERRORED: "API_REQUEST_BY_ID_ERRORED"
 };
 
-var graph;
+var graph = {
+    nodes: [],
+    links: []
+};
 var buildGraph;
 
-eventManager.subscribe(actions.API_SEARCH_RETURNED, function (data) {
-    graph = data;
+eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
+
+    graph.nodes = data.subClaims.concat(data.arguments);
+    graph.nodes.push(data.claim);
+
+    graph.links = data.subLinks.concat(data.argLinks);
+
+    graph.links.map(function (link) {
+        link.source = String(link._fromId);
+        link.target = String(link._toId);
+        return link;
+    });
+    console.log("graph", graph);
     buildGraph();
 });
 
