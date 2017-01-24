@@ -19,6 +19,19 @@ eventManager.subscribe(actions.USER_SEARCH_SUBMITTED, function(term){
     });
 });
 
+eventManager.subscribe(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, function(claimid){
+
+    //tell the world we're submitting a search (for spinners and the like)
+    eventManager.fire(actions.API_REQUEST_BY_ID_SUBMITTED, claimid);
+
+    $.ajax( "http://localhost:3030/claims/" + claimid).done(function(res) {
+        eventManager.fire(actions.API_REQUEST_BY_ID_RETURNED, res.data);
+    }).error(function(err){
+        eventManager.fire(actions.API_REQUEST_BY_ID_ERRORED, err);
+        console.error('search error', err);
+    });
+});
+
 export default {
     init: function(){
         //ping the API & see if it's alive

@@ -207,7 +207,11 @@ var actions = {
     USER_SEARCH_SUBMITTED: "USER_SEARCH_SUBMITTED",
     API_SEARCH_SUBMITTED: "API_SEARCH_SUBMITTED",
     API_SEARCH_RETURNED: "API_SEARCH_RETURNED",
-    API_SEARCH_ERRORED: "API_SEARCH_ERRORED"
+    API_SEARCH_ERRORED: "API_SEARCH_ERRORED",
+    CLAIM_REQUEST_BY_ID_SUBMITTED: "CLAIM_REQUEST_BY_ID_SUBMITTED",
+    API_REQUEST_BY_ID_SUBMITTED: "API_REQUEST_BY_ID_SUBMITTED",
+    API_REQUEST_BY_ID_RETURNED: "API_REQUEST_BY_ID_RETURNED",
+    API_REQUEST_BY_ID_ERRORED: "API_REQUEST_BY_ID_ERRORED"
 };
 
 var graph;
@@ -323,7 +327,7 @@ var d3v4graph = {
                 d.fy = null;
             }
 
-            eventManager.fire(actions.USER_SEARCH_SUBMITTED, 'e'); //just to get us kicked off
+            eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '25'); //just to get us kicked off
         }
     }
 };
@@ -359,6 +363,19 @@ eventManager.subscribe(actions.USER_SEARCH_SUBMITTED, function (term) {
         eventManager.fire(actions.API_SEARCH_RETURNED, res.data);
     }).error(function (err) {
         eventManager.fire(actions.API_SEARCH_ERRORED, err);
+        console.error('search error', err);
+    });
+});
+
+eventManager.subscribe(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, function (claimid) {
+
+    //tell the world we're submitting a search (for spinners and the like)
+    eventManager.fire(actions.API_REQUEST_BY_ID_SUBMITTED, claimid);
+
+    $.ajax("http://localhost:3030/claims/" + claimid).done(function (res) {
+        eventManager.fire(actions.API_REQUEST_BY_ID_RETURNED, res.data);
+    }).error(function (err) {
+        eventManager.fire(actions.API_REQUEST_BY_ID_ERRORED, err);
         console.error('search error', err);
     });
 });
