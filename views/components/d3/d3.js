@@ -7,8 +7,11 @@ export default {
             console.log('d3 initted!');
 
             //=============================== declaring all the variables!
-            var width = 300,
-                height = 500;
+            var width = 1200,
+                height = 1200;
+
+            var claimRad = 100;
+            var claimInArgPadding = 5;
 
             var force = d3.layout.force()
                 .size([width, height])
@@ -36,29 +39,50 @@ export default {
                 var nodes = [];
                 var links = [];
 
-                for (var i = 0; i < res.data.length; i++) {
 
-                    var dataContainer = res.data[i];
-                    console.log(res.data[i]);
+                var argGroupInfo = res[0].argGroup;
+                var argGroupNode = argGroupInfo.properties;
+
+                var claimCount = res.length;
+                var sqrRoot = Math.sqrt(claimCount);
+
+                var numbOfColumns = Math.floor(sqrRoot); 
+                if(claimCount == 2 || claimCount == 3)numbOfColumns = 2;//the rule doesnt work for 2 and 3 and im too dumb to know why yet.
+                var numbOfRows = Math.ceil(claimCount/numbOfColumns);
+            
+                argGroupNode.claimRad = ((claimRad + claimInArgPadding) * numbOfRows) + claimRad;
+
+                argGroupNode.x = 400;
+                argGroupNode.y = 400;
+                argGroupNode.fixed = true;
+                nodes.push(argGroupNode);
+
+                for (var i = 0; i < res.length; i++) {
+
+                    var dataContainer = res[i];
 
                     //check for duplicates
-                    var found = nodes.filter(function (m) { return m._id == dataContainer.argGroup._id; }).length > 0;
+                    var found = nodes.filter(function (m) { return m._id == dataContainer.claim._id; }).length > 0;
 
                     if (!found) {
-                        var newNode = dataContainer.argGroup.properties || {};
+                        var newNode = dataContainer.claim.properties || {};
 
-                        console.log(dataContainer.evidence);
+//set location to arg group xy then take halfargRad so we are not starting at centre and add half node so we account for nodes centre
+                        var insideCircleX = argGroupNode.x- (argGroupNode.claimRad / 2) + (claimRad/2);
+                        var insideCircleY = argGroupNode.y - (argGroupNode.claimRad / 2) + (claimRad/2);
+                        var distanceBetweenNodes = (claimRad * 2) + claimInArgPadding;
+                        newNode.x = insideCircleX + ((((i / numbOfColumns) % 1) * numbOfRows) * distanceBetweenNodes);
+                        newNode.y = insideCircleY + (Math.floor((i / numbOfRows)) * distanceBetweenNodes);
 
-                        newNode._id = dataContainer.argGroup._id;
-                        newNode.type = dataContainer.argGroup._id;
-                        newNode.x = 0 + i * 100;
-                        newNode.y = 0 + i * 100;
+                        newNode._id = dataContainer.claim._id;
+                        newNode.type = dataContainer.claim._id;
                         newNode.fixed = true;
                         newNode.index = i;
+                        newNode.claimRad = claimRad;
 
                         nodes.push(newNode);
 
-                       // links need to convert from id to index. We add any valid link for now and later we can sort id to index conversion
+                        // links need to convert from id to index. We add any valid link for now and later we can sort id to index conversion
                         // if (dataContainer.evidence != null )
                         // {
                         //     var foundLink = links.filter(function (m) { return m._id == dataContainer.evidence._id; }).length > 0;
@@ -69,6 +93,10 @@ export default {
                         // }
                     }
                 };
+
+                //argGroupNode.x -= (numbOfRows * claimRad)/2;
+                //argGroupNode.y 
+
 
                 // links.forEach(function (link) {
                 //     link.source = nodes.findIndex(function (m) { return m._id == link._fromId });
@@ -98,12 +126,13 @@ export default {
                 // Add one circle in each group
                 node = gnodes.append("circle")
                     .attr("class", "node")
-                    .attr("r", 50);
+                    .attr("r", function (d) { return d.claimRad; });
 
                 // Append the labels to each group
                 var labels = gnodes.append("text")
-                    .attr("dx", function (d) { return d.x; })
+                    .attr("dx", function (d) { return d.x - d.claimRad; })
                     .attr("dy", function (d) { return d.y; })
+                    .attr("wrap","hard")
                     .text(function (d) { return d.body; });
 
             }
