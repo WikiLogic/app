@@ -13,7 +13,6 @@ eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function(data){
     //a single claim returns: claim:{}, subClaims:[{}], arguments:[{}], argLinks[] and subLinks[]
     //they're all a bit sparse, it's up to the front end to do with them what we will :)
     //First things first - give the arguments some detail (the claims that they contain)
-    
     //run through all the arguments, give them an array to hold references to their sub claims.
     data.arguments.forEach(function(argument){
         argument.subClaims = [];
@@ -81,6 +80,19 @@ export default {
                 
 
                 //=========================== creating the graph elements (claim nodes, argument nodes, links)
+                // ------------------------- links (first so they go below the claim & arguments)
+                var link = svg.append("g")
+                    .attr("class", "links")
+                    .selectAll("line")
+                    .data(graph.links)
+                    .enter().append("line")
+                    .attr("stroke", function(d) {
+                        if (d.type == "OPPOSES") {  return 'red';  }
+                        if (d.type == "SUPPORTS") { return 'green';  } 
+                        return 'black'; 
+                    });
+
+
                 var nodes = svg.append("g")
                     .attr("class", "nodes")
                     .selectAll("g")
@@ -157,17 +169,6 @@ export default {
                                             return argText;
                                         });;
 
-                // ------------------------- links
-                var link = svg.append("g")
-                    .attr("class", "links")
-                    .selectAll("line")
-                    .data(graph.links)
-                    .enter().append("line")
-                    .attr("stroke", function(d) {
-                        if (d.type == "OPPOSES") {  return 'red';  }
-                        if (d.type == "SUPPORTS") { return 'green';  } 
-                        return 'black'; 
-                    });
                     
                 //=========================== start the force layout
                 simulation
@@ -215,7 +216,7 @@ export default {
                 d.fy = null;
             }
 
-            eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '25'); //just to get us kicked off
+            eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '2'); //just to get us kicked off
         }
     }
 }
