@@ -250,18 +250,44 @@ var graph = {
 var buildGraph;
 
 eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
+    //a single claim returns: claim:{}, subClaims:[{}], arguments:[{}], argLinks[] and subLinks[]
+    //they're all a bit sparse, it's up to the front end to do with them what we will :)
+    //First things first - give the arguments some detail (the claims that they contain)
 
-    graph.nodes = data.subClaims.concat(data.arguments);
+    //run through all the arguments, give them an array to hold references to their sub claims.
+    data.arguments.forEach(function (argument) {
+        argument.subClaims = [];
+        graph.nodes.push(argument);
+    });
+
+    //now run through a list of relationships between the arguments and their subclaims
+    data.subLinks.forEach(function (subLink) {
+        //find the subClaim (the source) that is referenced in this relationship
+        var subClaimToLink;
+        data.subClaims.some(function (subClaim) {
+            if (subClaim.id == subLink.source) {
+                subClaimToLink = subClaim;
+                return true;
+            }
+        });
+
+        //find the argument (the target) that is referenced in this relationship
+        var argumentToFill;
+        graph.nodes.some(function (argument) {
+            if (argument.id == subLink.target) {
+                //put a refrence to the subClaim we just found into this argument
+                argument.subClaims.push(subClaimToLink);
+                return true;
+            }
+        });
+    });
+
+    //Finally for the nodes - add in the claim that is of interest
     graph.nodes.push(data.claim);
 
-    graph.links = data.subLinks.concat(data.argLinks);
+    //as the argumets are holding the details of their subClaims, the only links d3 need to worry about is between the main claim and it's arguments
+    graph.links = data.argLinks;
 
-    graph.links.map(function (link) {
-        link.source = String(link._fromId);
-        link.target = String(link._toId);
-        return link;
-    });
-    console.log("graph", graph);
     buildGraph();
 });
 
@@ -280,16 +306,17 @@ var d3v4graph = {
                 var svg = d3.select("#d3v4").append("svg").attr("width", width).attr("height", height);
 
                 //https://github.com/d3/d3-force
+                //configure the force graph simulation
                 simulation = d3.forceSimulation().force("link", d3.forceLink().iterations(4).id(function (d) {
                     return d.id;
-                })).force("charge", d3.forceManyBody().strength(-10)).force("collide", d3.forceCollide().radius(50).iterations(2)).force("center", d3.forceCenter(width / 2, height / 2))
+                })).force("charge", d3.forceManyBody().strength(-10)).force("collide", d3.forceCollide().radius(100).iterations(2)).force("center", d3.forceCenter(width / 2, height / 2))
                 //force x & y are forces into the center (I think)
                 .force("x", d3.forceX()).force("y", d3.forceY());
 
-                //=========================== creating the graph elements
+                //=========================== creating the graph elements (claim nodes, argument nodes, links)
                 var nodes = svg.append("g").attr("class", "nodes").selectAll("g").data(graph.nodes).enter();
 
-                // ------------------------- claims
+                // ------------------------- claims (currently there's only one)
                 //svg as a circle to avoid overlaps
                 var claimNodes = nodes.filter(function (d) {
                     if (d.type == "claim") {
@@ -305,6 +332,7 @@ var d3v4graph = {
                 .attr("width", 100).attr("height", 100).attr("class", "claim-node__foreign-object").append("xhtml:div").attr("class", "claim-node__body-text").html(function (d) {
                     return d.body;
                 });
+
                 // ------------------------- argument groups
                 var argumentNodes = nodes.filter(function (d) {
                     if (d.type == "argument") {
@@ -314,7 +342,15 @@ var d3v4graph = {
                     }
                 }).append("g").attr("class", "argument-node").call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended));
 
-                argumentNodes.append("circle").attr("r", 5);
+                //building the internals of each argument
+                argumentNodes.append("g").attr("transform", "translate(-50,0)").append("switch").append("foreignObject") //needs a width and height
+                .attr("width", 100).attr("height", 100).attr("class", "argument-node__foreign-object").append("xhtml:div").attr("class", "argument-node__body-text").html(function (d) {
+                    var argText = "";
+                    d.subClaims.forEach(function (subClaim) {
+                        argText += subClaim.body + "<br/>";
+                    });
+                    return argText;
+                });
 
                 // ------------------------- links
                 var link = svg.append("g").attr("class", "links").selectAll("line").data(graph.links).enter().append("line").attr("stroke", function (d) {
@@ -327,7 +363,7 @@ var d3v4graph = {
                     return 'black';
                 });
 
-                //=========================== creating the force layout
+                //=========================== start the force layout
                 simulation.nodes(graph.nodes).on("tick", ticked);
 
                 simulation.force("link").links(graph.links);
