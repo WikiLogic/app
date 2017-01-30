@@ -253,43 +253,59 @@ eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
     //a single claim returns: claim:{}, subClaims:[{}], arguments:[{}], argLinks[] and subLinks[]
     //they're all a bit sparse, it's up to the front end to do with them what we will :)
 
-    //First up - add in the claim that is of interest
+    //1. Add the claim to the graph data (if it's not already in).
+    var graphHasClaim = graph.nodes.some(function (node) {
+        return node.id == data.claim.id;
+    });
 
-    graph.nodes.push(data.claim);
+    if (!graphHasClaim) {
+        console.log("NEW CLAIM!");
+        graph.nodes.push(data.claim);
+    }
 
-    //Now lets prepare the arguments by giving them some detail (the claims that they contain)
-    //run through all the arguments, give them an array to hold references to their sub claims.
+    //2. Add the arguments to the graph data (if they aren't already in).
     data.arguments.forEach(function (argument) {
-        argument.subClaims = [];
-        graph.nodes.push(argument);
-    });
 
-    //now run through a list of relationships between the arguments and their subclaims
-    data.subLinks.forEach(function (subLink) {
-        //find the subClaim (the source) that is referenced in this relationship
-        var subClaimToLink;
-        data.subClaims.some(function (subClaim) {
-            if (subClaim.id == subLink.source) {
-                subClaimToLink = subClaim;
-                return true;
-            }
+        var graphHasArgument = graph.nodes.some(function (node) {
+            return node.id == argument.id;
         });
 
-        //find the argument (the target) that is referenced in this relationship
-        var argumentToFill;
-        graph.nodes.some(function (argument) {
-            if (argument.id == subLink.target) {
-                //put a refrence to the subClaim we just found into this argument
-                argument.subClaims.push(subClaimToLink);
-                return true;
-            }
-        });
+        if (!graphHasArgument) {
+            console.log("NEW ARG");
+            argument.subClaims = []; //an array for this argument to hold a reference to it's sub claim objects
+            graph.nodes.push(argument);
+        }
     });
 
-    //as the argumets are holding the details of their subClaims, the only links d3 need to worry about is between the main claim and it's arguments
+    //3. add the relationships between the claims and their arguments (if they haven't already been established).
     if (data.argLinks.length > 0) {
+        //TODO check for duplicates... ?
         graph.links = graph.links.concat(data.argLinks);
     }
+
+    //4. give the arguments references to their sub claim objects: subLinks == subclaim(source) -> argument(target)
+    data.subLinks.forEach(function (subLink) {
+        //find the argument
+        var thisArgument = graph.nodes.find(function (node) {
+            return node.id == subLink.target;
+        });
+
+        //check if it already has the sub claim
+        var subClaimIsLinked = thisArgument.subClaims.some(function (node) {
+            console.log("- ", node.id, subLink.source);
+            return node.id == subLink.source;
+        });
+
+        if (!subClaimIsLinked) {
+            //find the subClaim (the source) that is referenced in this relationship
+            var subClaimToLink = data.subClaims.find(function (subClaim) {
+                return subClaim.id == subLink.source;
+            });
+
+            console.log('NEW SUB CLAIM', subClaimToLink);
+            thisArgument.subClaims.push(subClaimToLink);
+        }
+    });
 
     console.log("graph before", graph);
     updateGraph();
@@ -353,16 +369,18 @@ var d3v4graph = {
                     return d.body;
                 });
                 //the argument nodes
-                node.filter(function (d) {
+                var argNode = node.filter(function (d) {
                     return d.type == "argument";
                 }).append("g").attr("transform", "translate(-50,0)").append("switch").append("foreignObject") //needs a width and height
                 .attr("width", 100).attr("height", 100).attr("class", "argument-node__foreign-object").append("xhtml:div").attr("class", "argument-node__body").selectAll("div").data(function (d) {
                     return d.subClaims;
-                }).enter().append("xhtml:div").html(function (d) {
+                });
+                argNode.exit().remove();
+                argNode = argNode.enter().append("xhtml:div").html(function (d) {
                     return d.body;
                 }).on("click", function (event) {
                     console.log("sub claim clicked!", event);
-                });
+                }).merge(argNode);
 
                 //=========================== start the force layout
                 simulation.nodes(graph.nodes).on("tick", ticked);
