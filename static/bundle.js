@@ -359,12 +359,12 @@ var d3v4graph = {
 
                 //building the internals of each argument
                 argumentNodes.append("g").attr("transform", "translate(-50,0)").append("switch").append("foreignObject") //needs a width and height
-                .attr("width", 100).attr("height", 100).attr("class", "argument-node__foreign-object").append("xhtml:div").attr("class", "argument-node__body-text").html(function (d) {
-                    var argText = "";
-                    d.subClaims.forEach(function (subClaim) {
-                        argText += subClaim.body + "<br/>";
-                    });
-                    return argText;
+                .attr("width", 100).attr("height", 100).attr("class", "argument-node__foreign-object").append("xhtml:div").attr("class", "argument-node__body").selectAll("div").data(function (d) {
+                    return d.subClaims;
+                }).enter().append("xhtml:div").html(function (d) {
+                    return d.body;
+                }).on("click", function (event) {
+                    console.log("sub claim clicked!", event);
                 });
 
                 //=========================== start the force layout

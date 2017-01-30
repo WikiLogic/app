@@ -166,14 +166,19 @@ export default {
                                     .attr("height", 100)
                                     .attr("class", "argument-node__foreign-object")
                                     .append("xhtml:div")
-                                        .attr("class", "argument-node__body-text")
+                                        .attr("class", "argument-node__body")
+                                        .selectAll("div")
+                                        .data(function(d){
+                                            return d.subClaims;
+                                        })
+                                        .enter()
+                                        .append("xhtml:div")
                                         .html(function(d){
-                                            var argText = "";
-                                            d.subClaims.forEach(function(subClaim){
-                                                argText += subClaim.body + "<br/>";
-                                            });
-                                            return argText;
-                                        });;
+                                            return d.body;
+                                        })
+                                        .on("click", function(event){
+                                            console.log("sub claim clicked!", event);
+                                        });
 
                     
                 //=========================== start the force layout
