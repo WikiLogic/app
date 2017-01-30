@@ -91,9 +91,6 @@ export default {
                 .selectAll("g");
             
             updateGraph = function(){
-                //normal js - find the width of the d3v4 element & set the height based on that.
-
-                
 
                 //=========================== creating the graph elements (claim nodes, argument nodes, links)
                 // ------------------------- links (first so they go below the claim & arguments)
@@ -109,8 +106,7 @@ export default {
 
                 nodes = nodes.data(graph.nodes);
                 nodes.exit().remove();
-
-                //nodes.enter().merge(nodes);
+                nodes = nodes.enter().merge(nodes);
                 
                 
                 // ------------------------- claims (currently there's only one)
@@ -187,7 +183,6 @@ export default {
                                             console.log("sub claim clicked!", event);
                                         });
 
-                    
                 //=========================== start the force layout
                 simulation
                     .nodes(graph.nodes)

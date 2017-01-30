@@ -320,8 +320,6 @@ var d3v4graph = {
             var nodes = svg.append("g").attr("class", "nodes").selectAll("g");
 
             updateGraph = function () {
-                //normal js - find the width of the d3v4 element & set the height based on that.
-
 
                 //=========================== creating the graph elements (claim nodes, argument nodes, links)
                 // ------------------------- links (first so they go below the claim & arguments)
@@ -340,9 +338,7 @@ var d3v4graph = {
 
                 nodes = nodes.data(graph.nodes);
                 nodes.exit().remove();
-
-                //nodes.enter().merge(nodes);
-
+                nodes = nodes.enter().merge(nodes);
 
                 // ------------------------- claims (currently there's only one)
                 //svg as a circle to avoid overlaps
