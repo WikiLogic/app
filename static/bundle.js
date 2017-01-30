@@ -284,22 +284,78 @@ var graph = {
     nodes: [],
     links: []
 };
-var buildGraph;
+var updateGraph;
 
 eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
+    //a single claim returns: claim:{}, subClaims:[{}], arguments:[{}], argLinks[] and subLinks[]
+    //they're all a bit sparse, it's up to the front end to do with them what we will :)
 
-    graph.nodes = data.subClaims.concat(data.arguments);
-    graph.nodes.push(data.claim);
-
-    graph.links = data.subLinks.concat(data.argLinks);
-
-    graph.links.map(function (link) {
-        link.source = String(link._fromId);
-        link.target = String(link._toId);
-        return link;
+    //1. Add the claim to the graph data (if it's not already in).
+    var graphHasClaim = graph.nodes.some(function (node) {
+        return node.id == data.claim.id;
     });
-    console.log("graph", graph);
-    buildGraph();
+
+    if (!graphHasClaim) {
+        console.log("NEW CLAIM!");
+        graph.nodes.push(data.claim);
+    }
+
+    //2. Add the arguments to the graph data (if they aren't already in).
+    data.arguments.forEach(function (argument) {
+
+        var graphHasArgument = graph.nodes.some(function (node) {
+            return node.id == argument.id;
+        });
+
+        if (!graphHasArgument) {
+            console.log("NEW ARG");
+            argument.subClaims = []; //an array for this argument to hold a reference to it's sub claim objects
+            graph.nodes.push(argument);
+        }
+    });
+
+    //3. add the relationships between the claims and their arguments (if they haven't already been established).
+    if (data.argLinks.length > 0) {
+        //TODO check for duplicates... ?
+        data.argLinks.forEach(function (newLink) {
+            //check if if newLink is already in the graph
+            var graphAlreadyHasLink = graph.links.some(function (existingLink) {
+                return existingLink.id == newLink.id;
+            });
+
+            if (!graphAlreadyHasLink) {
+                console.log('NEW LINK', newLink);
+                graph.links.push(newLink);
+            }
+        });
+    }
+
+    //4. give the arguments references to their sub claim objects: subLinks == subclaim(source) -> argument(target)
+    data.subLinks.forEach(function (subLink) {
+        //find the argument
+        var thisArgument = graph.nodes.find(function (node) {
+            return node.id == subLink.target;
+        });
+
+        //check if it already has the sub claim
+        var subClaimIsLinked = thisArgument.subClaims.some(function (node) {
+            return node.id == subLink.source;
+        });
+
+        if (!subClaimIsLinked) {
+            //find the subClaim (the source) that is referenced in this relationship
+            var subClaimToLink = data.subClaims.find(function (subClaim) {
+                return subClaim.id == subLink.source;
+            });
+
+            console.log('NEW SUB CLAIM', subClaimToLink);
+            thisArgument.subClaims.push(subClaimToLink);
+        }
+    });
+
+    console.log("graph before", graph);
+    updateGraph();
+    console.log("graph after", graph);
 });
 
 var d3v4graph = {
@@ -308,53 +364,34 @@ var d3v4graph = {
 
             var simulation;
 
-            buildGraph = function () {
-                //normal js - find the width of the d3v4 element & set the height based on that.
-                var width = document.getElementById('d3v4').offsetWidth,
-                    height = width * 0.75;
+            var width = document.getElementById('d3v4').offsetWidth,
+                height = width * 0.75;
 
-                //create the svg & set it's width and height.
-                var svg = d3.select("#d3v4").append("svg").attr("width", width).attr("height", height);
+            //create the svg & set it's width and height.
+            var svg = d3.select("#d3v4").append("svg").attr("width", width).attr("height", height);
 
-                //https://github.com/d3/d3-force
-                simulation = d3.forceSimulation().force("link", d3.forceLink().iterations(4).id(function (d) {
-                    return d.id;
-                })).force("charge", d3.forceManyBody().strength(-10)).force("collide", d3.forceCollide().radius(50).iterations(2)).force("center", d3.forceCenter(width / 2, height / 2))
-                //force x & y are forces into the center (I think)
-                .force("x", d3.forceX()).force("y", d3.forceY());
+            //https://github.com/d3/d3-force
+            //configure the force graph simulation
+            simulation = d3.forceSimulation().force("link", d3.forceLink().iterations(4).id(function (d) {
+                return d.id;
+            })).force("charge", d3.forceManyBody().strength(-10)).force("collide", d3.forceCollide().radius(100).iterations(2)).force("center", d3.forceCenter(width / 2, height / 2))
+            //force x & y are forces into the center (I think)
+            .force("x", d3.forceX()).force("y", d3.forceY());
 
-                //=========================== creating the graph elements
-                var nodes = svg.append("g").attr("class", "nodes").selectAll("g").data(graph.nodes).enter();
+            var link = svg.append("g").attr("class", "links").selectAll("line");
 
-                // ------------------------- claims
-                //svg as a circle to avoid overlaps
-                var claimNodes = nodes.filter(function (d) {
-                    if (d.type == "claim") {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }).append("g").attr("class", "claim-node").call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended));
+            var node = svg.append("g").attr("class", "nodes").selectAll("g");
 
-                claimNodes.append("circle").attr("r", 50);
+            updateGraph = function () {
 
-                claimNodes.append("g").attr("class", "claim-node__body").attr("transform", "translate(-50,-50)").append("switch").append("foreignObject") //needs a width and height
-                .attr("width", 100).attr("height", 100).attr("class", "claim-node__foreign-object").append("xhtml:div").attr("class", "claim-node__body-text").html(function (d) {
-                    return d.body;
-                });
-                // ------------------------- argument groups
-                var argumentNodes = nodes.filter(function (d) {
-                    if (d.type == "argument") {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }).append("g").attr("class", "argument-node").call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended));
+                //=========================== creating the graph elements (claim nodes, argument nodes, links)
+                // ------------------------- links (first so they go below the claim & arguments)
 
-                argumentNodes.append("circle").attr("r", 5);
-
-                // ------------------------- links
-                var link = svg.append("g").attr("class", "links").selectAll("line").data(graph.links).enter().append("line").attr("stroke", function (d) {
+                //link is already set up as a selection of link elements
+                link = link.data(graph.links); //this binds the link element selection to the new data coming in
+                link.exit().remove(); //removes any extra elements in the array (if there are more elements than there are in the data coming through)
+                link = link.enter().append("line") //now we create the links
+                .attr("stroke", function (d) {
                     if (d.type == "OPPOSES") {
                         return 'red';
                     }
@@ -362,9 +399,71 @@ var d3v4graph = {
                         return 'green';
                     }
                     return 'black';
+                }).merge(link); //returns the selection of links merged with the new data
+
+                //node is already set up as a selection of g elements within the nodes group
+                node = node.data(graph.nodes); //this binds them to the new data
+                node.exit().remove(); //remove any extra node elements (beyond the length of the data coming in)
+                node = node.enter().append("g") //this created the individual node wrapper group
+                .call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended)).merge(node); //returns the selection of nodes merged with the new data
+
+                //the claim nodes selection
+                var claimNodes = node.filter(function (d) {
+                    return d.type == "claim";
                 });
 
-                //=========================== creating the force layout
+                //build the circle
+                claimNodes.append("circle").attr("class", "claim-node").attr("r", 50);
+
+                // //build the content
+                // claimNodes.append("g")
+                //     .attr("class", "claim-node__body")
+                //         .attr("transform", "translate(-50,-50)")
+                //             .append("switch")
+                //                 .append("foreignObject")//needs a width and height
+                //                     .attr("width", 100)
+                //                     .attr("height", 100)
+                //                     .attr("class", "claim-node__foreign-object")
+                //                     .append("xhtml:div")
+                //                         .attr("class", "claim-node__body-text")
+                //                         .html(function(d){
+                //                             return d.body;
+                //                         });
+
+                //the argument nodes selection
+                // var argNode = node.filter(function(d){ return (d.type == "argument"); });
+
+                // //build the argument node structure
+                // argNode.append("g")
+                //         .attr("transform", "translate(-50,0)")
+                //             .append("switch")
+                //                 .append("foreignObject")//needs a width and height
+                //                     .attr("width", 100)
+                //                     .attr("height", 100)
+                //                     .attr("class", "argument-node__foreign-object");
+                // .append("xhtml:div")
+                //     .attr("class", "argument-node__body");
+                //     .selectAll("div")
+                //     .data(function(d){
+                //         return d.subClaims;
+                //     });
+
+                //the argument's sub claim selection
+                //var subclaim = argNode.selectAll("div");
+                // argNode.exit().remove();
+
+                // argNode = argNode.enter()
+                //     .append("xhtml:div")
+                //     .html(function(d){
+                //         return d.body;
+                //     })
+                //     .on("click", function(event){
+                //         console.log("sub claim clicked!", event);
+                //     })
+                //     .merge(argNode);
+
+
+                //=========================== start the force layout
                 simulation.nodes(graph.nodes).on("tick", ticked);
 
                 simulation.force("link").links(graph.links);
@@ -379,14 +478,18 @@ var d3v4graph = {
                     }).attr("y2", function (d) {
                         return d.target.y;
                     });
-
-                    claimNodes.attr("transform", function (d) {
+                    node.attr("transform", function (d) {
                         return "translate(" + d.x + "," + d.y + ")";
                     });
+                    // claimNodes
+                    //     .attr("transform", function(d) { 
+                    //         return "translate(" + d.x + "," + d.y + ")"; 
+                    //     });
 
-                    argumentNodes.attr("transform", function (d) {
-                        return "translate(" + d.x + "," + d.y + ")";
-                    });
+                    // argumentNodes
+                    //     .attr("transform", function(d) { 
+                    //         return "translate(" + d.x + "," + d.y + ")"; 
+                    //     });
                 }
             };
 
@@ -413,7 +516,7 @@ var d3v4graph = {
 };
 
 /* Listens to any input with the class .js-search-input
- * On enter, it fires the USER_SEARCH_SUBMITTED event along with the search term
+ * On enter, it fires of the relevant ..._SUBMITTED event (normal search / ID search / ...?)
  */
 
 var search = {
@@ -422,9 +525,13 @@ var search = {
             if (e.keyCode == 13) {
                 //get the input value
                 var term = $('.js-search-input').val();
-                //fire!
-                eventManager.fire(actions.USER_SEARCH_SUBMITTED, term);
-                //It's out of our hands now :) 
+
+                if (isNaN(term)) {
+                    eventManager.fire(actions.USER_SEARCH_SUBMITTED, term);
+                } else {
+                    //if the term is just numbers, it's probably an id search
+                    eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, term);
+                }
             }
         });
     }
@@ -453,6 +560,10 @@ eventManager.subscribe(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, function (claimid)
     eventManager.fire(actions.API_REQUEST_BY_ID_SUBMITTED, claimid);
 
     $.ajax("http://localhost:3030/claims/" + claimid).done(function (res) {
+        if (!res.data.hasOwnProperty('claim')) {
+            eventManager.fire(actions.API_REQUEST_BY_ID_ERRORED, '404');
+            return;
+        }
         eventManager.fire(actions.API_REQUEST_BY_ID_RETURNED, res.data);
     }).error(function (err) {
         eventManager.fire(actions.API_REQUEST_BY_ID_ERRORED, err);

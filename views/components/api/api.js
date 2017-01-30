@@ -25,6 +25,10 @@ eventManager.subscribe(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, function(claimid){
     eventManager.fire(actions.API_REQUEST_BY_ID_SUBMITTED, claimid);
 
     $.ajax( "http://localhost:3030/claims/" + claimid).done(function(res) {
+        if (!res.data.hasOwnProperty('claim')) {
+            eventManager.fire(actions.API_REQUEST_BY_ID_ERRORED, '404');
+            return;
+        }
         eventManager.fire(actions.API_REQUEST_BY_ID_RETURNED, res.data);
     }).error(function(err){
         eventManager.fire(actions.API_REQUEST_BY_ID_ERRORED, err);
