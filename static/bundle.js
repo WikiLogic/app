@@ -442,7 +442,7 @@ var d3v4graph = {
                     return d.subClaims;
                 }); //bind it to the sub claims of an argument
 
-                argumentSubClaim.enter().append("div") //create the selection
+                argumentSubClaim.enter().append("xhtml:div") //create the selection
                 .attr("class", "argument-node__body").html(function (d) {
                     return d.body;
                 });

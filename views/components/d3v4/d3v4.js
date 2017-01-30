@@ -196,7 +196,7 @@ export default {
                     .data(function(d){ return d.subClaims; }); //bind it to the sub claims of an argument
 
                 argumentSubClaim.enter()
-                    .append("div") //create the selection
+                    .append("xhtml:div") //create the selection
                         .attr("class", "argument-node__body")
                         .html(function(d){
                             return d.body;
