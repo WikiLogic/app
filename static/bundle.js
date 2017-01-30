@@ -434,8 +434,8 @@ var d3v4graph = {
                     return [node];
                 });
 
-                argument = argument.enter().append("g").attr("class", "argument-node").attr("transform", "translate(-50,0)").append("switch").append("foreignObject") //needs a width and height
-                .attr("width", 100).attr("height", 100).attr("class", "argument-node__foreign-object");
+                argument = argument.enter().append("g").attr("class", "argument-node").attr("transform", "translate(-80,0)").append("switch").append("foreignObject") //needs a width and height
+                .attr("width", 160).attr("height", 100).attr("class", "argument-node__foreign-object");
 
                 //make the sub claim selection
                 var argumentSubClaim = argument.selectAll("div").data(function (d) {
@@ -443,24 +443,11 @@ var d3v4graph = {
                 }); //bind it to the sub claims of an argument
 
                 argumentSubClaim.enter().append("xhtml:div") //create the selection
-                .attr("class", "argument-node__body").html(function (d) {
+                .attr("class", "argument-node__sub-claim").html(function (d) {
                     return d.body;
+                }).on("click", function (event) {
+                    console.log("sub claim clicked!", event);
                 });
-
-                //the argument's sub claim selection
-                //var subclaim = argNode.selectAll("div");
-                // argNode.exit().remove();
-
-                // argNode = argNode.enter()
-                //     .append("xhtml:div")
-                //     .html(function(d){
-                //         return d.body;
-                //     })
-                //     .on("click", function(event){
-                //         console.log("sub claim clicked!", event);
-                //     })
-                //     .merge(argNode);
-
 
                 //=========================== start the force layout
                 simulation.nodes(graph.nodes).on("tick", ticked);

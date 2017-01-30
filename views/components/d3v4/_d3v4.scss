@@ -33,9 +33,15 @@
     text-anchor: middle;
   }
 
-  &__body-text {
+  //a div!
+  &__sub-claim{
     color: black;
     font-size: 12px;
     text-align: center;
+    margin-bottom: 5px;
+
+    &:hover {
+      color: red;
+    }
   }
 }
