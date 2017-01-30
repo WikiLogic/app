@@ -254,7 +254,8 @@ eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
     //they're all a bit sparse, it's up to the front end to do with them what we will :)
 
     //First up - add in the claim that is of interest
-    graph.nodes = [data.claim];
+
+    graph.nodes.push(data.claim);
 
     //Now lets prepare the arguments by giving them some detail (the claims that they contain)
     //run through all the arguments, give them an array to hold references to their sub claims.
@@ -287,12 +288,12 @@ eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
 
     //as the argumets are holding the details of their subClaims, the only links d3 need to worry about is between the main claim and it's arguments
     if (data.argLinks.length > 0) {
-        graph.links = data.argLinks;
+        graph.links = graph.links.concat(data.argLinks);
     }
 
-    console.log("graph", graph);
-    $('d3v4').html(""); //clear graph
+    console.log("graph before", graph);
     updateGraph();
+    console.log("graph after", graph);
 });
 
 var d3v4graph = {
@@ -317,7 +318,7 @@ var d3v4graph = {
 
             var link = svg.append("g").attr("class", "links").selectAll("line").append("line");
 
-            var nodes = svg.append("g").attr("class", "nodes").selectAll("g");
+            var node = svg.append("g").attr("class", "nodes").selectAll("g");
 
             updateGraph = function () {
 
@@ -336,38 +337,25 @@ var d3v4graph = {
                     return 'black';
                 }).merge(link);
 
-                nodes = nodes.data(graph.nodes);
-                nodes.exit().remove();
-                nodes = nodes.enter().merge(nodes);
+                node = node.data(graph.nodes);
+                node.exit().remove();
+                node = node.enter().append("g").call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended)).merge(node);
 
-                // ------------------------- claims (currently there's only one)
-                //svg as a circle to avoid overlaps
-                var claimNodes = nodes.filter(function (d) {
-                    if (d.type == "claim") {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }).append("g").attr("class", "claim-node").call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended));
-
-                claimNodes.append("circle").attr("r", 50);
-
-                claimNodes.append("g").attr("class", "claim-node__body").attr("transform", "translate(-50,-50)").append("switch").append("foreignObject") //needs a width and height
+                //the claim nodes
+                node.filter(function (d) {
+                    return d.type == "claim";
+                }).append("circle").attr("class", "claim-node").attr("r", 50);
+                //and their content
+                node.filter(function (d) {
+                    return d.type == "claim";
+                }).append("g").attr("class", "claim-node__body").attr("transform", "translate(-50,-50)").append("switch").append("foreignObject") //needs a width and height
                 .attr("width", 100).attr("height", 100).attr("class", "claim-node__foreign-object").append("xhtml:div").attr("class", "claim-node__body-text").html(function (d) {
                     return d.body;
                 });
-
-                // ------------------------- argument groups
-                var argumentNodes = nodes.filter(function (d) {
-                    if (d.type == "argument") {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }).append("g").attr("class", "argument-node").call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended));
-
-                //building the internals of each argument
-                argumentNodes.append("g").attr("transform", "translate(-50,0)").append("switch").append("foreignObject") //needs a width and height
+                //the argument nodes
+                node.filter(function (d) {
+                    return d.type == "argument";
+                }).append("g").attr("transform", "translate(-50,0)").append("switch").append("foreignObject") //needs a width and height
                 .attr("width", 100).attr("height", 100).attr("class", "argument-node__foreign-object").append("xhtml:div").attr("class", "argument-node__body").selectAll("div").data(function (d) {
                     return d.subClaims;
                 }).enter().append("xhtml:div").html(function (d) {
@@ -391,14 +379,18 @@ var d3v4graph = {
                     }).attr("y2", function (d) {
                         return d.target.y;
                     });
-
-                    claimNodes.attr("transform", function (d) {
+                    node.attr("transform", function (d) {
                         return "translate(" + d.x + "," + d.y + ")";
                     });
+                    // claimNodes
+                    //     .attr("transform", function(d) { 
+                    //         return "translate(" + d.x + "," + d.y + ")"; 
+                    //     });
 
-                    argumentNodes.attr("transform", function (d) {
-                        return "translate(" + d.x + "," + d.y + ")";
-                    });
+                    // argumentNodes
+                    //     .attr("transform", function(d) { 
+                    //         return "translate(" + d.x + "," + d.y + ")"; 
+                    //     });
                 }
             };
 
