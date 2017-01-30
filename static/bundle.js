@@ -259,7 +259,6 @@ eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
     });
 
     if (!graphHasClaim) {
-        console.log("NEW CLAIM!");
         graph.nodes.push(data.claim);
     }
 
@@ -271,7 +270,6 @@ eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
         });
 
         if (!graphHasArgument) {
-            console.log("NEW ARG");
             argument.subClaims = []; //an array for this argument to hold a reference to it's sub claim objects
             graph.nodes.push(argument);
         }
@@ -287,7 +285,6 @@ eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
             });
 
             if (!graphAlreadyHasLink) {
-                console.log('NEW LINK', newLink);
                 graph.links.push(newLink);
             }
         });
@@ -311,7 +308,6 @@ eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
                 return subClaim.id == subLink.source;
             });
 
-            console.log('NEW SUB CLAIM', subClaimToLink);
             thisArgument.subClaims.push(subClaimToLink);
         }
     });
@@ -368,30 +364,31 @@ var d3v4graph = {
                 node = node.data(graph.nodes); //this binds them to the new data
                 node.exit().remove(); //remove any extra node elements (beyond the length of the data coming in)
                 node = node.enter().append("g") //this created the individual node wrapper group
-                .call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended)).merge(node); //returns the selection of nodes merged with the new data
+                .merge(node); //returns the selection of nodes merged with the new data
+
+                node.call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended));
 
                 //the claim nodes selection
-                var claimNodes = node.filter(function (d) {
+                //var claimNodes = node.filter(function(d){ return (d.type == "claim"); });
+
+                //claim node selection
+                var claim = node.filter(function (d) {
                     return d.type == "claim";
-                });
+                }).selectAll("g").data(function (node) {
+                    return [node];
+                }); //this is working
+
+                //wrap it
+                claim = claim.enter().append("g").attr("class", "claim-node");
 
                 //build the circle
-                claimNodes.append("circle").attr("class", "claim-node").attr("r", 50);
+                claim.append("circle").attr("r", 50);
 
-                // //build the content
-                // claimNodes.append("g")
-                //     .attr("class", "claim-node__body")
-                //         .attr("transform", "translate(-50,-50)")
-                //             .append("switch")
-                //                 .append("foreignObject")//needs a width and height
-                //                     .attr("width", 100)
-                //                     .attr("height", 100)
-                //                     .attr("class", "claim-node__foreign-object")
-                //                     .append("xhtml:div")
-                //                         .attr("class", "claim-node__body-text")
-                //                         .html(function(d){
-                //                             return d.body;
-                //                         });
+                //add the text
+                claim.append("g").attr("class", "claim-node__body").attr("transform", "translate(-50,-50)").append("switch").append("foreignObject") //needs a width and height
+                .attr("width", 100).attr("height", 100).attr("class", "claim-node__foreign-object").append("xhtml:div").attr("class", "claim-node__body-text").html(function (d) {
+                    return d.body;
+                });
 
                 //the argument nodes selection
                 // var argNode = node.filter(function(d){ return (d.type == "argument"); });
