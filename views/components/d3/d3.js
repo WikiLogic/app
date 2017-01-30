@@ -34,7 +34,7 @@ export default {
                     .attr("cy", function (d) { return d.y; });
             }
 
-            var buildGraph = function (res) {
+            var updateGraph = function (res) {
 
                 var nodes = [];
                 var links = [];
@@ -46,10 +46,10 @@ export default {
                 var claimCount = res.length;
                 var sqrRoot = Math.sqrt(claimCount);
 
-                var numbOfColumns = Math.floor(sqrRoot); 
-                if(claimCount == 2 || claimCount == 3)numbOfColumns = 2;//the rule doesnt work for 2 and 3 and im too dumb to know why yet.
-                var numbOfRows = Math.ceil(claimCount/numbOfColumns);
-            
+                var numbOfColumns = Math.floor(sqrRoot);
+                if (claimCount == 2 || claimCount == 3) numbOfColumns = 2;//the rule doesnt work for 2 and 3 and im too dumb to know why yet.
+                var numbOfRows = Math.ceil(claimCount / numbOfColumns);
+
                 argGroupNode.claimRad = ((claimRad + claimInArgPadding) * numbOfRows) + claimRad;
 
                 argGroupNode.x = 400;
@@ -60,16 +60,16 @@ export default {
                 for (var i = 0; i < res.length; i++) {
 
                     var dataContainer = res[i];
-
+                    console.log(dataContainer);
                     //check for duplicates
                     var found = nodes.filter(function (m) { return m._id == dataContainer.claim._id; }).length > 0;
 
                     if (!found) {
                         var newNode = dataContainer.claim.properties || {};
 
-//set location to arg group xy then take halfargRad so we are not starting at centre and add half node so we account for nodes centre
-                        var insideCircleX = argGroupNode.x- (argGroupNode.claimRad / 2) + (claimRad/2);
-                        var insideCircleY = argGroupNode.y - (argGroupNode.claimRad / 2) + (claimRad/2);
+                        //set location to arg group xy then take halfargRad so we are not starting at centre and add half node so we account for nodes centre
+                        var insideCircleX = argGroupNode.x - (argGroupNode.claimRad / 2) + (claimRad / 2);
+                        var insideCircleY = argGroupNode.y - (argGroupNode.claimRad / 2) + (claimRad / 2);
                         var distanceBetweenNodes = (claimRad * 2) + claimInArgPadding;
                         newNode.x = insideCircleX + ((((i / numbOfColumns) % 1) * numbOfRows) * distanceBetweenNodes);
                         newNode.y = insideCircleY + (Math.floor((i / numbOfRows)) * distanceBetweenNodes);
@@ -130,20 +130,61 @@ export default {
 
                 // Append the labels to each group
                 var labels = gnodes.append("text")
+                    .text(function (d) { return d.body; })
+                    //.call(wrap, 100)
                     .attr("dx", function (d) { return d.x - d.claimRad; })
-                    .attr("dy", function (d) { return d.y; })
-                    .attr("wrap","hard")
-                    .text(function (d) { return d.body; });
+                    .attr("dy", function (d) { return d.y; });
+
+
+                // function wrap(text, width) {
+                //     text.each(function () {
+                //         var text = d3.select(this),
+                //             words = text.text().split(/\s+/).reverse(),
+                //             word,
+                //             line = [],
+                //             lineNumber = 0,
+                //             lineHeight = 1.1, // ems
+                //             y = text.attr("y"),
+                //             dy = parseFloat(text.attr("dy")),
+                //             tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+                //         while (word = words.pop()) {
+                //             line.push(word);
+                //             tspan.text(line.join(" "));
+                //             if (tspan.node().getComputedTextLength() > width) {
+                //                 line.pop();
+                //                 tspan.text(line.join(" "));
+                //                 line = [word];
+                //                 tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+                //             }
+                //         }
+                //     });
+                // }
+
+
+
+
+
+
 
             }
 
             //=============================== declaring all the variables! END!
 
             //=============================== Get the data!
+            //user interacts
+            // "GetClaim arguments"
+            //either calls graphupdate immedaitely or if database query requried calls it like below:
+
             //done is called once the ajax call has heard back from the server so by putting buildGraph inside, it only runs when the call returns
             $.ajax("http://localhost:3030/claims/random").done(function (res) {
-                buildGraph(res);
+
+                //there should be a graph object that stores the state of the canvas
+                //when a call is made it gets the results (either already loaded in memory or from a query)
+                //then call this function on the graph object graph.updateGraph(res)
+                updateGraph(res);
             });
+
+            //todo: one type of user interaction will be to call a hard coded set of commands that will build up a quick example canvas.
         }
     }
 }
