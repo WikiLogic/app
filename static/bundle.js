@@ -280,7 +280,17 @@ eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
     //3. add the relationships between the claims and their arguments (if they haven't already been established).
     if (data.argLinks.length > 0) {
         //TODO check for duplicates... ?
-        graph.links = graph.links.concat(data.argLinks);
+        data.argLinks.forEach(function (newLink) {
+            //check if if newLink is already in the graph
+            var graphAlreadyHasLink = graph.links.some(function (existingLink) {
+                return existingLink.id == newLink.id;
+            });
+
+            if (!graphAlreadyHasLink) {
+                console.log('NEW LINK', newLink);
+                graph.links.push(newLink);
+            }
+        });
     }
 
     //4. give the arguments references to their sub claim objects: subLinks == subclaim(source) -> argument(target)
@@ -292,7 +302,6 @@ eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
 
         //check if it already has the sub claim
         var subClaimIsLinked = thisArgument.subClaims.some(function (node) {
-            console.log("- ", node.id, subLink.source);
             return node.id == subLink.source;
         });
 
@@ -332,7 +341,7 @@ var d3v4graph = {
             //force x & y are forces into the center (I think)
             .force("x", d3.forceX()).force("y", d3.forceY());
 
-            var link = svg.append("g").attr("class", "links").selectAll("line").append("line");
+            var link = svg.append("g").attr("class", "links").selectAll("line");
 
             var node = svg.append("g").attr("class", "nodes").selectAll("g");
 
@@ -341,9 +350,11 @@ var d3v4graph = {
                 //=========================== creating the graph elements (claim nodes, argument nodes, links)
                 // ------------------------- links (first so they go below the claim & arguments)
 
-                link = link.data(graph.links);
-                link.exit().remove();
-                link = link.enter().append("line").attr("stroke", function (d) {
+                //link is already set up as a selection of link elements
+                link = link.data(graph.links); //this binds the link element selection to the new data coming in
+                link.exit().remove(); //removes any extra elements in the array (if there are more elements than there are in the data coming through)
+                link = link.enter().append("line") //now we create the links
+                .attr("stroke", function (d) {
                     if (d.type == "OPPOSES") {
                         return 'red';
                     }
@@ -351,36 +362,69 @@ var d3v4graph = {
                         return 'green';
                     }
                     return 'black';
-                }).merge(link);
+                }).merge(link); //returns the selection of links merged with the new data
 
-                node = node.data(graph.nodes);
-                node.exit().remove();
-                node = node.enter().append("g").call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended)).merge(node);
+                //node is already set up as a selection of g elements within the nodes group
+                node = node.data(graph.nodes); //this binds them to the new data
+                node.exit().remove(); //remove any extra node elements (beyond the length of the data coming in)
+                node = node.enter().append("g") //this created the individual node wrapper group
+                .call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended)).merge(node); //returns the selection of nodes merged with the new data
 
-                //the claim nodes
-                node.filter(function (d) {
+                //the claim nodes selection
+                var claimNodes = node.filter(function (d) {
                     return d.type == "claim";
-                }).append("circle").attr("class", "claim-node").attr("r", 50);
-                //and their content
-                node.filter(function (d) {
-                    return d.type == "claim";
-                }).append("g").attr("class", "claim-node__body").attr("transform", "translate(-50,-50)").append("switch").append("foreignObject") //needs a width and height
-                .attr("width", 100).attr("height", 100).attr("class", "claim-node__foreign-object").append("xhtml:div").attr("class", "claim-node__body-text").html(function (d) {
-                    return d.body;
                 });
-                //the argument nodes
-                var argNode = node.filter(function (d) {
-                    return d.type == "argument";
-                }).append("g").attr("transform", "translate(-50,0)").append("switch").append("foreignObject") //needs a width and height
-                .attr("width", 100).attr("height", 100).attr("class", "argument-node__foreign-object").append("xhtml:div").attr("class", "argument-node__body").selectAll("div").data(function (d) {
-                    return d.subClaims;
-                });
-                argNode.exit().remove();
-                argNode = argNode.enter().append("xhtml:div").html(function (d) {
-                    return d.body;
-                }).on("click", function (event) {
-                    console.log("sub claim clicked!", event);
-                }).merge(argNode);
+
+                //build the circle
+                claimNodes.append("circle").attr("class", "claim-node").attr("r", 50);
+
+                // //build the content
+                // claimNodes.append("g")
+                //     .attr("class", "claim-node__body")
+                //         .attr("transform", "translate(-50,-50)")
+                //             .append("switch")
+                //                 .append("foreignObject")//needs a width and height
+                //                     .attr("width", 100)
+                //                     .attr("height", 100)
+                //                     .attr("class", "claim-node__foreign-object")
+                //                     .append("xhtml:div")
+                //                         .attr("class", "claim-node__body-text")
+                //                         .html(function(d){
+                //                             return d.body;
+                //                         });
+
+                //the argument nodes selection
+                // var argNode = node.filter(function(d){ return (d.type == "argument"); });
+
+                // //build the argument node structure
+                // argNode.append("g")
+                //         .attr("transform", "translate(-50,0)")
+                //             .append("switch")
+                //                 .append("foreignObject")//needs a width and height
+                //                     .attr("width", 100)
+                //                     .attr("height", 100)
+                //                     .attr("class", "argument-node__foreign-object");
+                // .append("xhtml:div")
+                //     .attr("class", "argument-node__body");
+                //     .selectAll("div")
+                //     .data(function(d){
+                //         return d.subClaims;
+                //     });
+
+                //the argument's sub claim selection
+                //var subclaim = argNode.selectAll("div");
+                // argNode.exit().remove();
+
+                // argNode = argNode.enter()
+                //     .append("xhtml:div")
+                //     .html(function(d){
+                //         return d.body;
+                //     })
+                //     .on("click", function(event){
+                //         console.log("sub claim clicked!", event);
+                //     })
+                //     .merge(argNode);
+
 
                 //=========================== start the force layout
                 simulation.nodes(graph.nodes).on("tick", ticked);
