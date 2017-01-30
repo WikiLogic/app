@@ -213,6 +213,7 @@ export default {
                         })
                         .on("click", function(event){
                             console.log("sub claim clicked!", event);
+                            eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, event.id);
                         });
 
 
