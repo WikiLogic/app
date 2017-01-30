@@ -386,7 +386,17 @@ var d3v4graph = {
                 //link is already set up as a selection of link elements
                 link = link.data(graph.links); //this binds the link element selection to the new data coming in
                 link.exit().remove(); //removes any extra elements in the array (if there are more elements than there are in the data coming through)
-                link = link.enter().append("line") //now we create the links
+                link = link.enter().append("g").attr("class", function (d) {
+                    if (d.type == "OPPOSES") {
+                        return 'link link--opposes';
+                    }
+                    if (d.type == "SUPPORTS") {
+                        return 'link link--supports';
+                    }
+                    return 'black';
+                }).merge(link); //returns the selection of links merged with the new data
+
+                link.append("line") //now we create the links
                 .attr("stroke", function (d) {
                     if (d.type == "OPPOSES") {
                         return 'red';
@@ -395,7 +405,11 @@ var d3v4graph = {
                         return 'green';
                     }
                     return 'black';
-                }).merge(link); //returns the selection of links merged with the new data
+                });
+
+                link.append("text").html(function (d) {
+                    return d.type;
+                });
 
                 //node is already set up as a selection of g elements within the nodes group
                 node = node.data(graph.nodes); //this binds them to the new data
@@ -455,7 +469,7 @@ var d3v4graph = {
                 simulation.force("link").links(graph.links);
 
                 function ticked() {
-                    link.attr("x1", function (d) {
+                    link.selectAll("line").attr("x1", function (d) {
                         return d.source.x;
                     }).attr("y1", function (d) {
                         return d.source.y;
@@ -463,6 +477,12 @@ var d3v4graph = {
                         return d.target.x;
                     }).attr("y2", function (d) {
                         return d.target.y;
+                    });
+
+                    link.selectAll("text").attr("x", function (d) {
+                        return d.target.x - (d.target.x - d.source.x) / 2;
+                    }).attr("y", function (d) {
+                        return d.target.y - (d.target.y - d.source.y) / 2;
                     });
                     node.attr("transform", function (d) {
                         return "translate(" + d.x + "," + d.y + ")";
