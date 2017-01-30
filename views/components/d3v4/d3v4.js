@@ -12,7 +12,11 @@ var buildGraph;
 eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function(data){
     //a single claim returns: claim:{}, subClaims:[{}], arguments:[{}], argLinks[] and subLinks[]
     //they're all a bit sparse, it's up to the front end to do with them what we will :)
-    //First things first - give the arguments some detail (the claims that they contain)
+    
+    //First up - add in the claim that is of interest
+    graph.nodes = [data.claim];
+
+    //Now lets prepare the arguments by giving them some detail (the claims that they contain)
     //run through all the arguments, give them an array to hold references to their sub claims.
     data.arguments.forEach(function(argument){
         argument.subClaims = [];
@@ -41,12 +45,14 @@ eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function(data){
         });
     });
 
-    //Finally for the nodes - add in the claim that is of interest
-    graph.nodes.push(data.claim);
 
     //as the argumets are holding the details of their subClaims, the only links d3 need to worry about is between the main claim and it's arguments
-    graph.links = data.argLinks;
+    if (data.argLinks.length > 0){
+        graph.links = data.argLinks;
+    }
 
+    console.log("graph", graph);
+    $('d3v4').html(""); //clear graph
     buildGraph();
 });
 
@@ -216,7 +222,7 @@ export default {
                 d.fy = null;
             }
 
-            eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '2'); //just to get us kicked off
+            eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '25'); //just to get us kicked off
         }
     }
 }
