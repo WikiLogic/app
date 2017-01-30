@@ -1,9 +1,9 @@
 .link {
   
   font-size: 10px;
-  font-weight: light;
   text-anchor: middle;
   stroke-width: 1px;
+  
   &--opposes {
     stroke: red;
     color: red;
@@ -12,6 +12,10 @@
   &--supports {
     stroke: green;
     color: green;
+  }
+
+  text {
+    
   }
 }
 
