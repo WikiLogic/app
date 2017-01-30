@@ -149,7 +149,7 @@ export default {
                 var claim = node
                     .filter(function(d){ return (d.type == "claim"); })
                     .selectAll("g")
-                    .data(function(node){ return [node]; }); //this is working
+                    .data(function(node){ return [node]; });
 
                 //wrap it
                 claim = claim.enter()
@@ -159,7 +159,7 @@ export default {
                 //build the circle
                 claim.append("circle")
                     .attr("r", 50);
-                    
+
                 //add the text
                 claim.append("g")
                     .attr("class", "claim-node__body")
@@ -176,22 +176,31 @@ export default {
                                         });
 
                 //the argument nodes selection
-                // var argNode = node.filter(function(d){ return (d.type == "argument"); });
-                
-                // //build the argument node structure
-                // argNode.append("g")
-                //         .attr("transform", "translate(-50,0)")
-                //             .append("switch")
-                //                 .append("foreignObject")//needs a width and height
-                //                     .attr("width", 100)
-                //                     .attr("height", 100)
-                //                     .attr("class", "argument-node__foreign-object");
-                                    // .append("xhtml:div")
-                                    //     .attr("class", "argument-node__body");
-                                    //     .selectAll("div")
-                                    //     .data(function(d){
-                                    //         return d.subClaims;
-                                    //     });
+                var argument = node
+                    .filter(function(d){ return (d.type == "argument"); })
+                    .selectAll("g")
+                    .data(function(node){ return [node]; });
+
+                argument = argument.enter()
+                    .append("g")
+                        .attr("class", "argument-node")
+                        .attr("transform", "translate(-50,0)")
+                            .append("switch")
+                                .append("foreignObject")//needs a width and height
+                                    .attr("width", 100)
+                                    .attr("height", 100)
+                                    .attr("class", "argument-node__foreign-object");
+
+                //make the sub claim selection
+                var argumentSubClaim = argument.selectAll("div")
+                    .data(function(d){ return d.subClaims; }); //bind it to the sub claims of an argument
+
+                argumentSubClaim.enter()
+                    .append("div") //create the selection
+                        .attr("class", "argument-node__body")
+                        .html(function(d){
+                            return d.body;
+                        });
 
                 //the argument's sub claim selection
                 //var subclaim = argNode.selectAll("div");

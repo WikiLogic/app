@@ -376,7 +376,7 @@ var d3v4graph = {
                     return d.type == "claim";
                 }).selectAll("g").data(function (node) {
                     return [node];
-                }); //this is working
+                });
 
                 //wrap it
                 claim = claim.enter().append("g").attr("class", "claim-node");
@@ -391,22 +391,24 @@ var d3v4graph = {
                 });
 
                 //the argument nodes selection
-                // var argNode = node.filter(function(d){ return (d.type == "argument"); });
+                var argument = node.filter(function (d) {
+                    return d.type == "argument";
+                }).selectAll("g").data(function (node) {
+                    return [node];
+                });
 
-                // //build the argument node structure
-                // argNode.append("g")
-                //         .attr("transform", "translate(-50,0)")
-                //             .append("switch")
-                //                 .append("foreignObject")//needs a width and height
-                //                     .attr("width", 100)
-                //                     .attr("height", 100)
-                //                     .attr("class", "argument-node__foreign-object");
-                // .append("xhtml:div")
-                //     .attr("class", "argument-node__body");
-                //     .selectAll("div")
-                //     .data(function(d){
-                //         return d.subClaims;
-                //     });
+                argument = argument.enter().append("g").attr("class", "argument-node").attr("transform", "translate(-50,0)").append("switch").append("foreignObject") //needs a width and height
+                .attr("width", 100).attr("height", 100).attr("class", "argument-node__foreign-object");
+
+                //make the sub claim selection
+                var argumentSubClaim = argument.selectAll("div").data(function (d) {
+                    return d.subClaims;
+                }); //bind it to the sub claims of an argument
+
+                argumentSubClaim.enter().append("div") //create the selection
+                .attr("class", "argument-node__body").html(function (d) {
+                    return d.body;
+                });
 
                 //the argument's sub claim selection
                 //var subclaim = argNode.selectAll("div");
