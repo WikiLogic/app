@@ -7,7 +7,7 @@ var graph = {
     nodes: [],
     links: []
 };
-var buildGraph;
+var updateGraph;
 
 eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function(data){
     //a single claim returns: claim:{}, subClaims:[{}], arguments:[{}], argLinks[] and subLinks[]
@@ -53,7 +53,7 @@ eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function(data){
 
     console.log("graph", graph);
     $('d3v4').html(""); //clear graph
-    buildGraph();
+    updateGraph();
 });
 
 export default {
@@ -62,48 +62,55 @@ export default {
             
             var simulation;
 
-            buildGraph = function(){
-                //normal js - find the width of the d3v4 element & set the height based on that.
-                var width = document.getElementById('d3v4').offsetWidth,
-                    height = width * 0.75;
-                
-                //create the svg & set it's width and height.
-                var svg = d3.select("#d3v4").append("svg")
-                    .attr("width", width)
-                    .attr("height", height);
+            var width = document.getElementById('d3v4').offsetWidth,
+                height = width * 0.75;
+            
+            //create the svg & set it's width and height.
+            var svg = d3.select("#d3v4").append("svg")
+                .attr("width", width)
+                .attr("height", height);
 
-                //https://github.com/d3/d3-force
-                //configure the force graph simulation
-                simulation = d3.forceSimulation()
-                    .force("link", d3.forceLink().iterations(4).id(function(d) { return d.id; }))
-                    .force("charge", d3.forceManyBody().strength(-10) )
-                    .force("collide", d3.forceCollide().radius(100).iterations(2) )
-                    .force("center", d3.forceCenter(width / 2, height / 2) )
-                    //force x & y are forces into the center (I think)
-                    .force("x", d3.forceX())
-                    .force("y", d3.forceY());
+            //https://github.com/d3/d3-force
+            //configure the force graph simulation
+            simulation = d3.forceSimulation()
+                .force("link", d3.forceLink().iterations(4).id(function(d) { return d.id; }))
+                .force("charge", d3.forceManyBody().strength(-10) )
+                .force("collide", d3.forceCollide().radius(100).iterations(2) )
+                .force("center", d3.forceCenter(width / 2, height / 2) )
+                //force x & y are forces into the center (I think)
+                .force("x", d3.forceX())
+                .force("y", d3.forceY());
+
+            var link = svg.append("g")
+                .attr("class", "links")
+                .selectAll("line")
+                .append("line");
+            
+            var nodes = svg.append("g")
+                .attr("class", "nodes")
+                .selectAll("g");
+            
+            updateGraph = function(){
+                //normal js - find the width of the d3v4 element & set the height based on that.
 
                 
 
                 //=========================== creating the graph elements (claim nodes, argument nodes, links)
                 // ------------------------- links (first so they go below the claim & arguments)
-                var link = svg.append("g")
-                    .attr("class", "links")
-                    .selectAll("line")
-                    .data(graph.links)
-                    .enter().append("line")
+
+                link = link.data(graph.links);
+                link.exit().remove();
+                link = link.enter().append("line")
                     .attr("stroke", function(d) {
                         if (d.type == "OPPOSES") {  return 'red';  }
                         if (d.type == "SUPPORTS") { return 'green';  } 
                         return 'black'; 
-                    });
+                    }).merge(link);
 
+                nodes = nodes.data(graph.nodes);
+                nodes.exit().remove();
 
-                var nodes = svg.append("g")
-                    .attr("class", "nodes")
-                    .selectAll("g")
-                    .data(graph.nodes)
-                    .enter();
+                //nodes.enter().merge(nodes);
                 
                 
                 // ------------------------- claims (currently there's only one)
