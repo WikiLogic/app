@@ -3,6 +3,23 @@
 /* This file / module is responsible for taking the data from the API
  * and converting it into a structure that's ready for D3.
  */
+var api_data_looks_like_this = {
+    claim: { id: 1, body: "blah", state: false, type: "claim"  },
+    arguments: [ { id: 1, state: true, type: "argument" }],
+    argLinks: [ { id: 1, type: "OPPOSES", source: 1, target: 2 } ],
+    subClaims: [ { id: 1, body: "blah", state: true, type: "claim" } ],
+    subLinks: [ { id: 1, type: "USED_IN", source: 1, target: 2 } ]
+};
+
+var graph_data_looks_like_this = {
+    nodes: [ //these are the nodes that will be drawn by the d3 force graph
+        { id: 1, type: "claim", body: "blah", state: false },
+        { id: 1, type: "argument", body: "blah", state: false } 
+    ],
+    links: [ { id: 0, source: 1, target: 2, type:"TYPE" } ] //these are the links between nodes on the force graph
+
+};
+
 
 export default {
     convertDataFromIdApi: function(graph, data){

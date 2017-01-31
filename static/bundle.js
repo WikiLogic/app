@@ -280,10 +280,6 @@ var actions = {
     API_REQUEST_BY_ID_ERRORED: "API_REQUEST_BY_ID_ERRORED"
 };
 
-/* This file / module is responsible for taking the data from the API
- * and converting it into a structure that's ready for D3.
- */
-
 var graphDataConverter = {
     convertDataFromIdApi: function (graph, data) {
         //a single claim returns: claim:{}, subClaims:[{}], arguments:[{}], argLinks[] and subLinks[]
