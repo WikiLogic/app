@@ -7,8 +7,8 @@ export default {
             console.log('d3 initted!');
 
             //=============================== declaring all the variables!
-            var width = 1200,
-                height = 1200;
+           var width = document.getElementById('d3').offsetWidth,
+                height = width * 0.75;
 
             var claimRad = 100;
             var claimInArgPadding = 5;
@@ -81,7 +81,7 @@ export default {
                         nodes.push(newNode);
                     }
                 };
-                
+
                  updateGraph(nodes, links);
             }
 

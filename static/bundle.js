@@ -31,8 +31,8 @@ var d3graph = {
                                                 console.log('d3 initted!');
 
                                                 //=============================== declaring all the variables!
-                                                var width = 1200,
-                                                    height = 1200;
+                                                var width = document.getElementById('d3').offsetWidth,
+                                                    height = width * 0.75;
 
                                                 var claimRad = 100;
                                                 var claimInArgPadding = 5;
@@ -505,7 +505,7 @@ var d3v4graph = {
                 d.fy = null;
             }
 
-            eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '25'); //just to get us kicked off
+            eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '239'); //just to get us kicked off
         }
     }
 };

@@ -191,7 +191,7 @@ export default {
                 d.fy = null;
             }
 
-            eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '25'); //just to get us kicked off
+            eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '239'); //just to get us kicked off
         }
     }
 }
