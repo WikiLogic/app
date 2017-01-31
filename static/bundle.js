@@ -102,10 +102,12 @@ var graphDataConverter = {
     convertDataFromIdApi: function (graph, data) {
 
         //1. Add the main claim to the graph data.
+        data.claim.x = 5000;
         graph = addClaimToGraph(graph, data.claim);
 
         //2. Add the arguments to the graph data.
         data.arguments.forEach(function (argument) {
+            argument.x = 5000;
             graph = addArgumentToGraph(graph, argument);
         });
 
@@ -262,7 +264,10 @@ var d3graph = {
                 node = node.enter().append("g") //this created the individual node wrapper group
                 .merge(node); //returns the selection of nodes merged with the new data
 
-                node.call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended));
+                // node.call(d3.drag()
+                //     .on("start", dragstarted)
+                //     .on("drag", dragged)
+                //     .on("end", dragended));
 
                 //the claim nodes selection
                 //var claimNodes = node.filter(function(d){ return (d.type == "claim"); });
@@ -313,7 +318,7 @@ var d3graph = {
                 simulation.nodes(graph.nodes).on("tick", ticked);
 
                 simulation.force("link").links(graph.links);
-
+                console.log("sss");
                 function ticked() {
                     link.selectAll("line").attr("x1", function (d) {
                         return d.source.x;
@@ -330,30 +335,34 @@ var d3graph = {
                     }).attr("y", function (d) {
                         return d.target.y - (d.target.y - d.source.y) / 2;
                     });
-                    node.attr("transform", function (d) {
-                        return "translate(" + d.x + "," + d.y + ")";
+
+                    node.attr("cx", function (d) {
+                        return d.x;
+                    }).attr("cy", function (d) {
+                        return d.y;
                     });
 
                     //make a relationship array for clones (claims that are in an argument & have their own node).
                 }
+                console.log("sdf");
             };
 
-            function dragstarted(d) {
-                if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-                d.fx = d.x;
-                d.fy = d.y;
-            }
+            // function dragstarted(d) {
+            //     if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+            //     d.fx = d.x;
+            //     d.fy = d.y;
+            // }
 
-            function dragged(d) {
-                d.fx = d3.event.x;
-                d.fy = d3.event.y;
-            }
+            // function dragged(d) {
+            //     d.fx = d3.event.x;
+            //     d.fy = d3.event.y;
+            // }
 
-            function dragended(d) {
-                if (!d3.event.active) simulation.alphaTarget(0);
-                d.fx = null;
-                d.fy = null;
-            }
+            // function dragended(d) {
+            //     if (!d3.event.active) simulation.alphaTarget(0);
+            //     d.fx = null;
+            //     d.fy = null;
+            // }
 
             eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '234'); //just to get us kicked off
         }

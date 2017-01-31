@@ -26,10 +26,12 @@ export default {
     convertDataFromIdApi: function(graph, data){
 
         //1. Add the main claim to the graph data.
+        data.claim.x = 5000;
         graph = addClaimToGraph(graph, data.claim);
 
         //2. Add the arguments to the graph data.
         data.arguments.forEach(function(argument){
+            argument.x = 5000;
             graph = addArgumentToGraph(graph, argument);
         }); 
 
