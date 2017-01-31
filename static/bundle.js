@@ -207,13 +207,13 @@ eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
 
 var d3graph = {
     init: function () {
-        if (document.getElementById('d3v4')) {
+        if (document.getElementById('d3')) {
 
-            var width = document.getElementById('d3v4').offsetWidth,
+            var width = document.getElementById('d3').offsetWidth,
                 height = width * 0.75;
 
             //create the svg & set it's width and height.
-            var svg = d3.select("#d3v4").append("svg").attr("width", width).attr("height", height);
+            var svg = d3.select("#d3").append("svg").attr("width", width).attr("height", height);
 
             //https://github.com/d3/d3-force
             //configure the force graph simulation

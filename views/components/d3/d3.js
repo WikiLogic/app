@@ -2,8 +2,8 @@
 
 import eventManager from '../js-helpers/eventManager.js';
 import actions from '../js-helpers/actions.js';
-import graphDataConverter from '../d3/graph-data-converter.js';
-import forceSimulationConfig from '../d3/force-simulation-config.js';
+import graphDataConverter from './graph-data-converter.js';
+import forceSimulationConfig from './force-simulation-config.js';
 
 var graph = {
     nodes: [],
@@ -19,13 +19,13 @@ eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function(data){
 
 export default {
     init: function () {
-        if (document.getElementById('d3v4')) {
+        if (document.getElementById('d3')) {
             
-            var width = document.getElementById('d3v4').offsetWidth,
+            var width = document.getElementById('d3').offsetWidth,
                 height = width * 0.75;
             
             //create the svg & set it's width and height.
-            var svg = d3.select("#d3v4").append("svg")
+            var svg = d3.select("#d3").append("svg")
                 .attr("width", width)
                 .attr("height", height);
 
