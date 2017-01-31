@@ -257,35 +257,15 @@ var actions = {
     API_REQUEST_BY_ID_ERRORED: "API_REQUEST_BY_ID_ERRORED"
 };
 
-/* This file / module is responsible for taking the data from the API
- * and converting it into a structure that's ready for D3.
- */
-
 var graphDataConverter = {
     convertDataFromIdApi: function (graph, data) {
-        //a single claim returns: claim:{}, subClaims:[{}], arguments:[{}], argLinks[] and subLinks[]
-        //they're all a bit sparse, it's up to the front end to do with them what we will :)
 
-        //1. Add the claim to the graph data (if it's not already in).
-        var graphHasClaim = graph.nodes.some(function (node) {
-            return node.id == data.claim.id;
-        });
+        //1. Add the main claim to the graph data.
+        graph = addClaimToGraph(graph, data.claim);
 
-        if (!graphHasClaim) {
-            graph.nodes.push(data.claim);
-        }
-
-        //2. Add the arguments to the graph data (if they aren't already in).
+        //2. Add the arguments to the graph data.
         data.arguments.forEach(function (argument) {
-
-            var graphHasArgument = graph.nodes.some(function (node) {
-                return node.id == argument.id;
-            });
-
-            if (!graphHasArgument) {
-                argument.subClaims = []; //an array for this argument to hold a reference to it's sub claim objects
-                graph.nodes.push(argument);
-            }
+            graph = addArgumentToGraph(graph, argument);
         });
 
         //3. add the relationships between the claims and their arguments (if they haven't already been established).
@@ -328,6 +308,35 @@ var graphDataConverter = {
         return graph;
     }
 };
+
+function addClaimToGraph(graph, claim) {
+    //check if the claim is already in the graph as a node, we don't want any duplicates!
+    var graphHasClaim = graph.nodes.some(function (node) {
+        return node.id == claim.id;
+    });
+
+    if (graphHasClaim) {
+        //"fails" sliently, but I'm not sure if you'd really consider this a fail 
+        return graph;
+    } else {
+        graph.nodes.push(claim);
+        return graph;
+    }
+}
+
+function addArgumentToGraph(graph, argument) {
+    var graphHasArgument = graph.nodes.some(function (node) {
+        return node.id == argument.id;
+    });
+
+    if (graphHasArgument) {
+        return graph;
+    } else {
+        argument.subClaims = []; //an array for this argument to hold a reference to it's sub claim objects
+        graph.nodes.push(argument);
+        return graph;
+    }
+}
 
 /* The magic number settings for the mysterious force layout.
  * https://github.com/d3/d3-force
@@ -532,6 +541,35 @@ var search = {
     }
 };
 
+/* Listens out for text search results returning.
+ * Displays the list of results.
+ * Fires an event on click.
+ */
+
+eventManager.subscribe(actions.API_SEARCH_RETURNED, function (results) {
+    var resultsMarkup = ``;
+
+    results.claims.forEach(function (claim) {
+        resultsMarkup += `
+            <div class="search-result js-search-result" data-claimid="${ claim.id }">
+                <div class="search-result__body">
+                ${ claim.body }
+                </div>
+            </div>
+        `;
+    });
+
+    $('.js-search-results-list').html(resultsMarkup);
+
+    //set up event listeners
+    $('.js-search-result').off('click');
+    $('.js-search-result').on('click', function (e) {
+        var thisClaimId = $(this).data('claimid');
+        console.log("result clicked!", thisClaimId);
+        eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, thisClaimId);
+    });
+});
+
 /* This is where we talk to the WikiLogic API
  *
  */
@@ -571,8 +609,8 @@ eventManager.subscribe(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, function (claimid)
 //import * as $ from '../node_modules/jquery/dist/jquery.js';
 //import $ from '../node_modules/jquery/dist/jquery.slim.js';
 
-//UI
 
+//UI
 //Yep, only one onload listener, but we only need one
 window.onload = function () {
     alchemy$1.init();
