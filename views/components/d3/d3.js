@@ -34,14 +34,12 @@ export default {
                     .attr("cy", function (d) { return d.y; });
             }
 
-            var updateGraph = function (res) {
+            var processArgGroup = function (res) {
 
                 var nodes = [];
                 var links = [];
 
-
-                var argGroupInfo = res[0].argGroup;
-                var argGroupNode = argGroupInfo.properties;
+                var argGroupNode = res[0].argGroup.properties;
 
                 var claimCount = res.length;
                 var sqrRoot = Math.sqrt(claimCount);
@@ -81,28 +79,13 @@ export default {
                         newNode.claimRad = claimRad;
 
                         nodes.push(newNode);
-
-                        // links need to convert from id to index. We add any valid link for now and later we can sort id to index conversion
-                        // if (dataContainer.evidence != null )
-                        // {
-                        //     var foundLink = links.filter(function (m) { return m._id == dataContainer.evidence._id; }).length > 0;
-                        //     if (!foundLink) {
-                        //     console.log(dataContainer.evidence);
-                        //         //links.push(dataContainer.evidence);
-                        //     }
-                        // }
                     }
                 };
+                
+                 updateGraph(nodes, links);
+            }
 
-                //argGroupNode.x -= (numbOfRows * claimRad)/2;
-                //argGroupNode.y 
-
-
-                // links.forEach(function (link) {
-                //     link.source = nodes.findIndex(function (m) { return m._id == link._fromId });
-                //     link.target = nodes.findIndex(function (m) { return m._id == link._toId });
-
-                //});
+            var updateGraph = function (nodes, links) {
 
                 var graph = { nodes: nodes, links: links };
 
@@ -112,10 +95,6 @@ export default {
                     .nodes(graph.nodes)
                     .links(graph.links)
                     .start();
-
-                link = link.data(graph.links)
-                    .enter().append("line")
-                    .attr("class", "link");
 
                 var gnodes = svg.selectAll('g.gnode')
                     .data(graph.nodes)
@@ -134,38 +113,6 @@ export default {
                     //.call(wrap, 100)
                     .attr("dx", function (d) { return d.x - d.claimRad; })
                     .attr("dy", function (d) { return d.y; });
-
-
-                // function wrap(text, width) {
-                //     text.each(function () {
-                //         var text = d3.select(this),
-                //             words = text.text().split(/\s+/).reverse(),
-                //             word,
-                //             line = [],
-                //             lineNumber = 0,
-                //             lineHeight = 1.1, // ems
-                //             y = text.attr("y"),
-                //             dy = parseFloat(text.attr("dy")),
-                //             tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
-                //         while (word = words.pop()) {
-                //             line.push(word);
-                //             tspan.text(line.join(" "));
-                //             if (tspan.node().getComputedTextLength() > width) {
-                //                 line.pop();
-                //                 tspan.text(line.join(" "));
-                //                 line = [word];
-                //                 tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
-                //             }
-                //         }
-                //     });
-                // }
-
-
-
-
-
-
-
             }
 
             //=============================== declaring all the variables! END!
@@ -181,10 +128,43 @@ export default {
                 //there should be a graph object that stores the state of the canvas
                 //when a call is made it gets the results (either already loaded in memory or from a query)
                 //then call this function on the graph object graph.updateGraph(res)
-                updateGraph(res);
+                processArgGroup(res);
             });
 
             //todo: one type of user interaction will be to call a hard coded set of commands that will build up a quick example canvas.
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   // links need to convert from id to index. We add any valid link for now and later we can sort id to index conversion
+                        // if (dataContainer.evidence != null )
+                        // {
+                        //     var foundLink = links.filter(function (m) { return m._id == dataContainer.evidence._id; }).length > 0;
+                        //     if (!foundLink) {
+                        //     console.log(dataContainer.evidence);
+                        //         //links.push(dataContainer.evidence);
+                        //     }
+                        // }
+
+                //argGroupNode.x -= (numbOfRows * claimRad)/2;
+                //argGroupNode.y 
+
+
+                // links.forEach(function (link) {
+                //     link.source = nodes.findIndex(function (m) { return m._id == link._fromId });
+                //     link.target = nodes.findIndex(function (m) { return m._id == link._toId });
+
+                //});
