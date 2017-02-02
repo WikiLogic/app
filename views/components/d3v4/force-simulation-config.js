@@ -31,6 +31,5 @@ export default {
             
             //alphaDecay: reduces the strength of all forces on each tick (default is 0.0228...)
             .alphaDecay(0.2);
-            //.force("alpha", d3.alphaDecay());
     }
 }
