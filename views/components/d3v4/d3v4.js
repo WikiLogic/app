@@ -17,6 +17,8 @@ export default function () {
         eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function(data){
             graph = graphDataConverter.convertDataFromIdApi(graph, data);
             updateGraph();
+            simulation.alpha(0.5).alphaDecay(0.2);
+            simulation.restart(); //restarts the simulation so any new nodes don't get stuck
         });
 
         
@@ -151,8 +153,10 @@ export default function () {
                         return d.body;
                     })
                     .on("click", function(event){
-                        console.log("sub claim clicked!", event);
                         eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, event.id);
+                    })
+                    .on("mousedown", function(){
+                        d3.event.stopPropagation(); 
                     });
 
 
@@ -186,7 +190,7 @@ export default function () {
 
 
         function dragstarted(d) {
-            if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+            if (!d3.event.active) simulation.alphaTarget(0.01).restart();
             d.fx = d.x;
             d.fy = d.y;
         }

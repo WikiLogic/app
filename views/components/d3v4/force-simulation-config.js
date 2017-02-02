@@ -29,8 +29,8 @@ export default {
             
             //friction: slows the rate of travel from a node's original position
             
-            //Alpha: reduces the strength of all forces on each tick
-            .alphaTarget(0).restart();
+            //alphaDecay: reduces the strength of all forces on each tick (default is 0.0228...)
+            .alphaDecay(0.2);
             //.force("alpha", d3.alphaDecay());
     }
 }

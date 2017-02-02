@@ -469,8 +469,8 @@ var forceSimulationConfig$1 = {
 
         //friction: slows the rate of travel from a node's original position
 
-        //Alpha: reduces the strength of all forces on each tick
-        .alphaTarget(0).restart();
+        //alphaDecay: reduces the strength of all forces on each tick (default is 0.0228...)
+        .alphaDecay(0.2);
         //.force("alpha", d3.alphaDecay());
     }
 };
@@ -487,6 +487,8 @@ var d3v4graph = function () {
         eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
             graph = graphDataConverter$1.convertDataFromIdApi(graph, data);
             updateGraph();
+            simulation.alpha(0.5).alphaDecay(0.2);
+            simulation.restart(); //restarts the simulation so any new nodes don't get stuck
         });
 
         var width = document.getElementById('d3v4').offsetWidth,
@@ -593,8 +595,9 @@ var d3v4graph = function () {
             .attr("class", "argument-node__sub-claim").html(function (d) {
                 return d.body;
             }).on("click", function (event) {
-                console.log("sub claim clicked!", event);
                 eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, event.id);
+            }).on("mousedown", function () {
+                d3.event.stopPropagation();
             });
 
             //=========================== start the force layout
@@ -627,7 +630,7 @@ var d3v4graph = function () {
         };
 
         function dragstarted(d) {
-            if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+            if (!d3.event.active) simulation.alphaTarget(0.01).restart();
             d.fx = d.x;
             d.fy = d.y;
         }
