@@ -72,14 +72,22 @@ export default function () {
                 })
                 .merge(link); //returns the selection of links merged with the new data
 
-            link.append("line") //now we create the links
+            //make the lines to show the links
+            link.selectAll("line")
+                .data(function(link){ console.log('link', link); return [link]; })
+                .enter()
+                .append("line") //now we create the links
                 .attr("stroke", function(d) {
                     if (d.type == "OPPOSES") {  return 'red';  }
                     if (d.type == "SUPPORTS") { return 'green';  } 
                     return 'black'; 
                 })
 
-            link.append("text")
+            //add text to show the type of relationship
+            link.selectAll("text")
+                .data(function(link){ return [link]; })
+                .enter()
+                .append("text")
                 .html(function(d){ return d.type; });
 
             //node is already set up as a selection of g elements within the nodes group
