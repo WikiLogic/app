@@ -471,7 +471,6 @@ var forceSimulationConfig$1 = {
 
         //alphaDecay: reduces the strength of all forces on each tick (default is 0.0228...)
         .alphaDecay(0.2);
-        //.force("alpha", d3.alphaDecay());
     }
 };
 
@@ -681,10 +680,15 @@ eventManager.subscribe(actions.API_SEARCH_RETURNED, function (results) {
     var resultsMarkup = ``;
 
     results.claims.forEach(function (claim) {
+        //for now, random number between 1 and 100 for the status
+        var status = Math.floor(Math.random() * 100 + 1);
         resultsMarkup += `
             <div class="search-result js-search-result" data-claimid="${ claim.id }">
                 <div class="search-result__body">
                 ${ claim.body }
+                </div>
+                <div class="search-result__status-wrap">
+                    <div class="search-result__status-bar search-result__status-bar--${ status }"></div>
                 </div>
             </div>
         `;

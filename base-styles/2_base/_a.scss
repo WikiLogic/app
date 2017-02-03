@@ -2,9 +2,6 @@
 	text-decoration: none;
 	color: $link-blue;
 	padding-bottom: 2px;
-	border-bottom: 1px solid rgba($link-blue, 0.1);
-	&:hover {
-		border-bottom: 1px solid $link-blue;
-		//border-bottom: 1px solid $link-hover;
-	}
+	
+	@include occluded-underline(white, $link-blue, $link-blue);
 }
