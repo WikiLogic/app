@@ -11,7 +11,13 @@ export default {
             
             //Link: creates a force between linked nodes    
                 //.forceLink() 
-            .force("link", d3.forceLink().id(function(d) { return d.id; }))
+            .force("link", d3.forceLink()
+                .id((d)=>{ return d.id; })
+                .distance((d)=>{ return 20; })
+                .strength((link)=>{ 
+                    //strength between 0 and 1, any more and it gets unstable
+                    return 2;
+                 }))
             
             //Charge: simluates the forces between nodes. Negative charge pushes away, positive attracts 
             .force("charge", d3.forceManyBody().strength(1000) )

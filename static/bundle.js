@@ -450,8 +450,13 @@ var forceSimulationConfig$1 = {
 
         //Link: creates a force between linked nodes    
         //.forceLink() 
-        .force("link", d3.forceLink().id(function (d) {
+        .force("link", d3.forceLink().id(d => {
             return d.id;
+        }).distance(d => {
+            return 20;
+        }).strength(link => {
+            //strength between 0 and 1, any more and it gets unstable
+            return 2;
         }))
 
         //Charge: simluates the forces between nodes. Negative charge pushes away, positive attracts 
@@ -635,7 +640,7 @@ var d3v4graph = function () {
         };
 
         function dragstarted(d) {
-            if (!d3.event.active) simulation.alphaTarget(0.008).restart();
+            if (!d3.event.active) simulation.alphaTarget(0.01).restart();
             d.fx = d.x;
             d.fy = d.y;
         }
