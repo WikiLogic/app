@@ -641,8 +641,9 @@ var d3v4graph = function () {
 
         function dragended(d) {
             if (!d3.event.active) simulation.alphaTarget(0);
-            d.fx = null;
-            d.fy = null;
+            //fix this node
+            //d.fx = null;
+            //d.fy = null;
         }
 
         eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '25'); //just to get us kicked off
