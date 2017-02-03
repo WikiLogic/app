@@ -30,7 +30,15 @@ export default function () {
             .attr("width", width)
             .attr("height", height)
             .attr("class", "chart");
-        var chart = svg.append("g");//this is the group that willhost the graph :)
+            
+        //create a rect for the chart background
+        svg.append("rect")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("class", "chart__bg-rect");
+
+        var chart = svg.append("g") //this is the group that gets dragged and scaled
+            .attr("class", "chart__drag-g");
             
         var zoom = d3.zoom()
             .scaleExtent([0.1, 40])
@@ -48,11 +56,11 @@ export default function () {
 
 
         var link = chart.append("g")
-            .attr("class", "links")
+            .attr("class", "chart__links-g")
             .selectAll("line");
         
         var node = chart.append("g")
-            .attr("class", "nodes")
+            .attr("class", "chart__nodes-g")
             .selectAll("g");
         
         updateGraph = function(){
@@ -66,8 +74,8 @@ export default function () {
             link = link.enter()
                 .append("g")
                 .attr("class", function(d) {
-                    if (d.type == "OPPOSES") {  return 'link link--opposes';  }
-                    if (d.type == "SUPPORTS") { return 'link link--supports';  } 
+                    if (d.type == "OPPOSES") {  return 'chart__link chart__link--opposes';  }
+                    if (d.type == "SUPPORTS") { return 'chart__link chart__link--supports';  } 
                     return 'black'; 
                 })
                 .merge(link); //returns the selection of links merged with the new data
@@ -83,12 +91,20 @@ export default function () {
                     return 'black'; 
                 })
 
-            //add text to show the type of relationship
-            link.selectAll("text")
+            //background text to occlude the line
+            var linkText = link.selectAll("text")
                 .data(function(link){ return [link]; })
-                .enter()
-                .append("text")
+                .enter();
+
+            linkText.append("text")
+                .attr("class", "chart__link-text-bg")
                 .html(function(d){ return d.type; });
+
+            //add text to show the type of relationship
+            linkText.append("text")
+                .attr("class", "chart__link-text")
+                .html(function(d){ return d.type; });
+
 
             //node is already set up as a selection of g elements within the nodes group
             node = node.data(graph.nodes); //this binds them to the new data
@@ -114,7 +130,7 @@ export default function () {
             //wrap it
             claim = claim.enter()
                 .append("g")
-                    .attr("class", "claim-node");
+                    .attr("class", "chart__claim");
 
             //build the circle
             claim.append("circle")
@@ -122,15 +138,14 @@ export default function () {
 
             //add the text
             claim.append("g")
-                .attr("class", "claim-node__body")
+                .attr("class", "chart__claim-body-g")
                     .attr("transform", "translate(-50,-50)")
                         .append("switch")
                             .append("foreignObject")//needs a width and height
                                 .attr("width", 100)
                                 .attr("height", 100)
-                                .attr("class", "claim-node__foreign-object")
                                 .append("xhtml:div")
-                                    .attr("class", "claim-node__body-text")
+                                    .attr("class", "chart__claim-text")
                                     .html(function(d){
                                         return d.body;
                                     });
@@ -143,13 +158,12 @@ export default function () {
 
             argument = argument.enter()
                 .append("g")
-                    .attr("class", "argument-node")
+                    .attr("class", "chart__argument")
                     .attr("transform", "translate(-80,0)")
                         .append("switch")
                             .append("foreignObject")//needs a width and height
                                 .attr("width", 160)
-                                .attr("height", 100)
-                                .attr("class", "argument-node__foreign-object");
+                                .attr("height", 100);
 
             //make the sub claim selection
             var argumentSubClaim = argument.selectAll("div")
@@ -157,7 +171,7 @@ export default function () {
 
             argumentSubClaim.enter()
                 .append("xhtml:div") //create the selection
-                    .attr("class", "argument-node__sub-claim")
+                    .attr("class", "chart__argument-sub-claim")
                     .html(function(d){
                         return d.body;
                     })

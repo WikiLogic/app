@@ -1,0 +1,82 @@
+//svg
+.chart {
+
+    //a full size rect that holds the background for the chart
+    &__bg-rect {
+        fill: #eee;
+    }
+        &__drag-g {}
+
+            &__links-g {}
+            &__nodes-g {}
+
+    //now to style the elements
+    &__link {
+        font-size: 10px;
+        text-anchor: middle;
+        stroke-width: 1px;
+
+        &-text {
+
+        }
+        &-text-bg {
+            stroke: #eee;
+            stroke-width: 4px;
+            opacity: 0.9;
+        }
+
+        &--opposes {
+            text { fill: red; }
+            line { 
+                fill: red; 
+                stroke-opacity: 0.8;
+            }
+        }
+        &--supports {
+            text { fill: green; }
+            line { 
+                fill: green; 
+                stroke-opacity: 0.8;
+            }
+        }
+    }
+
+    &__claim {
+        //stroke: transparent;
+        fill: white;
+        stroke: green;
+        &-body-g {}
+        &-text {
+            color: black;
+            font-size: 12px;
+            text-align: center;
+            padding: 10px;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+    }
+    
+    &__argument {
+        &-title {
+            fill: red;
+            color: red;
+            stroke: none;
+            font-size: 10px;
+            text-anchor: middle;
+        }
+        &-sub-claim {
+            color: black;
+            font-size: 12px;
+            text-align: center;
+            margin-bottom: 5px;
+            padding: 5px;
+            background: rgba(white, 0.3);
+
+            &:hover {
+            color: red;
+            }
+        }
+    }
+}

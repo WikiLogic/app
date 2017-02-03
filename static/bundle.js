@@ -500,7 +500,12 @@ var d3v4graph = function () {
 
         //create the svg & set it's width and height.
         var svg = d3.select("#d3v4").append("svg").attr("width", width).attr("height", height).attr("class", "chart");
-        var chart = svg.append("g"); //this is the group that willhost the graph :)
+
+        //create a rect for the chart background
+        svg.append("rect").attr("width", width).attr("height", height).attr("class", "chart__bg-rect");
+
+        var chart = svg.append("g") //this is the group that gets dragged and scaled
+        .attr("class", "chart__drag-g");
 
         var zoom = d3.zoom().scaleExtent([0.1, 40]).translateExtent([[-1000, -1000], [width + 1000, height + 1000]]).on("zoom", function () {
             //scale the chart
@@ -513,9 +518,9 @@ var d3v4graph = function () {
         //configure the force graph simulation
         var simulation = forceSimulationConfig$1.default(d3, width, height);
 
-        var link = chart.append("g").attr("class", "links").selectAll("line");
+        var link = chart.append("g").attr("class", "chart__links-g").selectAll("line");
 
-        var node = chart.append("g").attr("class", "nodes").selectAll("g");
+        var node = chart.append("g").attr("class", "chart__nodes-g").selectAll("g");
 
         updateGraph = function () {
 
@@ -527,10 +532,10 @@ var d3v4graph = function () {
             link.exit().remove(); //removes any extra elements in the array (if there are more elements than there are in the data coming through)
             link = link.enter().append("g").attr("class", function (d) {
                 if (d.type == "OPPOSES") {
-                    return 'link link--opposes';
+                    return 'chart__link chart__link--opposes';
                 }
                 if (d.type == "SUPPORTS") {
-                    return 'link link--supports';
+                    return 'chart__link chart__link--supports';
                 }
                 return 'black';
             }).merge(link); //returns the selection of links merged with the new data
@@ -549,10 +554,17 @@ var d3v4graph = function () {
                 return 'black';
             });
 
-            //add text to show the type of relationship
-            link.selectAll("text").data(function (link) {
+            //background text to occlude the line
+            var linkText = link.selectAll("text").data(function (link) {
                 return [link];
-            }).enter().append("text").html(function (d) {
+            }).enter();
+
+            linkText.append("text").attr("class", "chart__link-text-bg").html(function (d) {
+                return d.type;
+            });
+
+            //add text to show the type of relationship
+            linkText.append("text").attr("class", "chart__link-text").html(function (d) {
                 return d.type;
             });
 
@@ -575,14 +587,14 @@ var d3v4graph = function () {
             });
 
             //wrap it
-            claim = claim.enter().append("g").attr("class", "claim-node");
+            claim = claim.enter().append("g").attr("class", "chart__claim");
 
             //build the circle
             claim.append("circle").attr("r", 50);
 
             //add the text
-            claim.append("g").attr("class", "claim-node__body").attr("transform", "translate(-50,-50)").append("switch").append("foreignObject") //needs a width and height
-            .attr("width", 100).attr("height", 100).attr("class", "claim-node__foreign-object").append("xhtml:div").attr("class", "claim-node__body-text").html(function (d) {
+            claim.append("g").attr("class", "chart__claim-body-g").attr("transform", "translate(-50,-50)").append("switch").append("foreignObject") //needs a width and height
+            .attr("width", 100).attr("height", 100).append("xhtml:div").attr("class", "chart__claim-text").html(function (d) {
                 return d.body;
             });
 
@@ -593,8 +605,8 @@ var d3v4graph = function () {
                 return [node];
             });
 
-            argument = argument.enter().append("g").attr("class", "argument-node").attr("transform", "translate(-80,0)").append("switch").append("foreignObject") //needs a width and height
-            .attr("width", 160).attr("height", 100).attr("class", "argument-node__foreign-object");
+            argument = argument.enter().append("g").attr("class", "chart__argument").attr("transform", "translate(-80,0)").append("switch").append("foreignObject") //needs a width and height
+            .attr("width", 160).attr("height", 100);
 
             //make the sub claim selection
             var argumentSubClaim = argument.selectAll("div").data(function (d) {
@@ -602,7 +614,7 @@ var d3v4graph = function () {
             }); //bind it to the sub claims of an argument
 
             argumentSubClaim.enter().append("xhtml:div") //create the selection
-            .attr("class", "argument-node__sub-claim").html(function (d) {
+            .attr("class", "chart__argument-sub-claim").html(function (d) {
                 return d.body;
             }).on("click", function (event) {
                 eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, event.id);
