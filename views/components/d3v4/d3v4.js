@@ -28,7 +28,8 @@ export default function () {
         //create the svg & set it's width and height.
         var svg = d3.select("#d3v4").append("svg")
             .attr("width", width)
-            .attr("height", height);
+            .attr("height", height)
+            .attr("class", "chart");
         var chart = svg.append("g");//this is the group that willhost the graph :)
             
         var zoom = d3.zoom()

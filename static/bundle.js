@@ -494,7 +494,7 @@ var d3v4graph = function () {
             height = width * 0.75;
 
         //create the svg & set it's width and height.
-        var svg = d3.select("#d3v4").append("svg").attr("width", width).attr("height", height);
+        var svg = d3.select("#d3v4").append("svg").attr("width", width).attr("height", height).attr("class", "chart");
         var chart = svg.append("g"); //this is the group that willhost the graph :)
 
         var zoom = d3.zoom().scaleExtent([0.1, 40]).translateExtent([[-1000, -1000], [width + 1000, height + 1000]]).on("zoom", function () {
