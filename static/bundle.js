@@ -608,15 +608,19 @@ var d3v4graph = function () {
             argument = argument.enter().append("g").attr("class", "chart__argument").attr("transform", "translate(-80,0)").append("switch").append("foreignObject") //needs a width and height
             .attr("width", 160).attr("height", 100);
 
-            //make the sub claim selection
-            var argumentSubClaim = argument.selectAll("div").data(function (d) {
+            //build the sub claims
+            var subClaim = argument.selectAll("div").data(function (d) {
                 return d.subClaims;
             }); //bind it to the sub claims of an argument
 
-            argumentSubClaim.enter().append("xhtml:div") //create the selection
-            .attr("class", "chart__argument-sub-claim").html(function (d) {
+            subClaim = subClaim.enter().append("xhtml:div") //create the selection
+            .attr("class", "chart__sub-claim");
+
+            subClaim.append("xhtml:div").attr("class", "chart__sub-claim-text").html(function (d) {
                 return d.body;
-            }).on("click", function (event) {
+            });
+
+            subClaim.append("xhtml:div").attr("class", "chart__sub-claim-button").html("+").on("click", function (event) {
                 eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, event.id);
             }).on("mousedown", function () {
                 d3.event.stopPropagation();

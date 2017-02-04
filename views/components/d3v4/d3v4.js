@@ -165,22 +165,29 @@ export default function () {
                                 .attr("width", 160)
                                 .attr("height", 100);
 
-            //make the sub claim selection
-            var argumentSubClaim = argument.selectAll("div")
+            //build the sub claims
+            var subClaim = argument.selectAll("div")
                 .data(function(d){ return d.subClaims; }); //bind it to the sub claims of an argument
 
-            argumentSubClaim.enter()
+            subClaim = subClaim.enter()
                 .append("xhtml:div") //create the selection
-                    .attr("class", "chart__argument-sub-claim")
-                    .html(function(d){
-                        return d.body;
-                    })
-                    .on("click", function(event){
-                        eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, event.id);
-                    })
-                    .on("mousedown", function(){
-                        d3.event.stopPropagation(); 
-                    });
+                .attr("class", "chart__sub-claim");
+            
+            subClaim.append("xhtml:div")
+                .attr("class", "chart__sub-claim-text")
+                .html(function(d){
+                    return d.body;
+                });
+
+            subClaim.append("xhtml:div")
+                .attr("class", "chart__sub-claim-button")
+                .html("+")
+                .on("click", function(event){
+                    eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, event.id);
+                })
+                .on("mousedown", function(){
+                    d3.event.stopPropagation(); 
+                });
 
 
             //=========================== start the force layout
