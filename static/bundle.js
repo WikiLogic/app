@@ -364,23 +364,17 @@ var graphDataConverter$1 = {
         //1. Add the main claim to the graph data.
         graph = addClaimToGraph$1(graph, data.claim);
 
-        //2. Add the arguments to the graph data.
+        //2.1 Add the down arguments to the graph data.
         data.arguments.forEach(function (argument) {
             graph = addArgumentToGraph$1(graph, argument);
         });
 
         //3. add the relationships between the claims and their arguments (if they haven't already been established).
         if (data.argLinks.length > 0) {
-            //TODO check for duplicates... ?
             data.argLinks.forEach(function (newLink) {
-                //check if if newLink is already in the graph
-                var graphAlreadyHasLink = graph.links.some(function (existingLink) {
-                    return existingLink.id == newLink.id;
-                });
-
-                if (!graphAlreadyHasLink) {
-                    graph.links.push(newLink);
-                }
+                console.group("Adding argLink to graph");
+                graph = addLinkToGraph(graph, newLink);
+                console.groupEnd();
             });
         }
 
@@ -403,6 +397,43 @@ var graphDataConverter$1 = {
                 });
 
                 thisArgument.subClaims.push(subClaimToLink);
+            }
+        });
+
+        //5 Add the up arguments to the graph data. (the ones the main claim is used in)
+        // data.usedInArgs.forEach(function(argument){
+        //     graph = addArgumentToGraph(graph, argument);
+        // }); 
+
+        // //6 add the relationships between the main claim and those arguments
+        //  if (data.usedInLinks.length > 0){
+        //     //TODO check for duplicates... ?
+        //     data.usedInLinks.forEach(function(newLink){
+        //         //check if if newLink is already in the graph
+        //         var graphAlreadyHasLink = graph.links.some(function(existingLink){
+        //             return (existingLink.id == newLink.id);
+        //         });
+
+        //         if (!graphAlreadyHasLink) {
+        //             graph.links.push(newLink);
+        //         }
+        //     });
+        // }
+
+        //7. Now that all is said and done. Check if the claim we just added exists in any argument groups already there
+        graph.nodes.forEach(function (argNode) {
+            if (argNode.type == "argument") {
+                //loop through the sub claims in this argument...
+                argNode.subClaims.forEach(function (subClaim) {
+                    if (subClaim.id == data.claim.id) {
+                        console.log('WE FOUND A CLONE!');
+                        graph = addLinkToGraph(graph, {
+                            type: "USED_IN",
+                            source: data.claim.id,
+                            target: argNode.id
+                        });
+                    }
+                });
             }
         });
 
@@ -435,6 +466,34 @@ function addArgumentToGraph$1(graph, argument) {
     } else {
         argument.subClaims = []; //an array for this argument to hold a reference to it's sub claim objects
         graph.nodes.push(argument);
+        return graph;
+    }
+}
+
+function addLinkToGraph(graph, newLink) {
+    //if there are no links, it's probably not a duplicate :P
+    if (graph.links.length == 0) {
+        graph.links.push(newLink);
+        return graph;
+    }
+
+    //check if if newLink is already in the graph (using source and target)
+    var graphAlreadyHasLink = false; //innocent until proven guilty
+    graphAlreadyHasLink = graph.links.some(function (existingLink) {
+        if (existingLink.source == newLink.source) {
+            //oh oh - half way to a match!
+            if (existingLink.target == newLink.target) {
+                return false; //that's a match, return false for the "some" to set the graphAlreadyHasLink to true
+            }
+        }
+        return true;
+    });
+
+    //now do the appropriate thing :)
+    if (!graphAlreadyHasLink) {
+        return graph;
+    } else {
+        graph.links.push(newLink);
         return graph;
     }
 }
@@ -673,7 +732,7 @@ var d3v4graph = function () {
             //d.fy = null;
         }
 
-        eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '25'); //just to get us kicked off
+        eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '35'); //just to get us kicked off
     }
 };
 
