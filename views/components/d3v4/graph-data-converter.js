@@ -89,25 +89,47 @@ export default {
         //     });
         // }
 
-        //7. Now that all is said and done. Check if the claim we just added exists in any argument groups already there
-        graph.nodes.forEach(function(argNode){
-            if (argNode.type == "argument") {
-                //loop through the sub claims in this argument...
-                argNode.subClaims.forEach(function(subClaim){
-                    if (subClaim.id == data.claim.id) {
-                        console.log('WE FOUND A CLONE!');
-                        graph = addLinkToGraph(graph, {
-                            type: "USED_IN",
-                            source: data.claim.id,
-                            target: argNode.id
-                        });
-                    }
+        //7. Now that all is said and done. Check if any of the claims we just added exist in any argument groups already there
+        //loop through all the arguments & their sub claims
+        forEachArgSubClaimInGraph(graph, function(subClaim, argNode){
+
+            //check if the sub claim exists as an individual claim node in the graph
+            if (isClaimInGraph(graph, subClaim)) {
+                console.log("This sub claim has been cloned into a REAL CLAIM!!");
+
+                //link it
+                graph = addLinkToGraph(graph, {
+                    type: "USED_IN",
+                    source: subClaim.id,
+                    target: argNode.id
                 });
             }
         });
 
         return graph;
     }
+}
+
+function forEachArgSubClaimInGraph(graph, runThis){
+    //run through all the nodes
+    graph.nodes.forEach(function(argNode){
+        //but only do stuff for the argument noeds
+        if (argNode.type == "argument") {
+            //loop through the sub claims in this argument
+            argNode.subClaims.forEach(function(subClaim){
+                //and pass the function the sub claim... and the argument node for good measure
+                runThis(subClaim, argNode);
+            });
+        }
+    });
+}
+
+function isClaimInGraph(graph, claim){
+    return graph.nodes.some(function(node){
+        if (node.type == "claim" && node.id == claim.id) {
+            return true;
+        }
+    });
 }
 
 
