@@ -15,7 +15,7 @@ import api from './api/api.js';
 //Yep, only one onload listener, but we only need one
 window.onload = function(){
     alchemy.init();
-    d3graph.init();
-    d3v4graph.init();
+    d3graph();
+    d3v4graph();
     search.init();
 };
