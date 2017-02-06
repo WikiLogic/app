@@ -3,20 +3,21 @@
 /* This file / module is responsible for taking the data from the API
  * and converting it into a structure that's ready for D3.
  */
-    // usedInArgs: [ { id: 1, state: true, type: "argument" } ], //any arguments that the focus claim is used in
-    // usedInLinks: [ { id: 1, type: "USED_IN", souce: 1, target: 2 } ], //any used in links that the claim is a part of
 var api_data_looks_like_this = {
-    claim: { id: 1, body: "blah", state: false, type: "claim"  }, //the claim who's id was requested from the API
-    arguments: [ { id: 1, state: true, type: "argument" }], //all it's arguments
+    usedInSiblings: [ { id: 1, body: "blah", state: 50, type: "claim" } ],
+    usedInArgs: [ { id: 1, state: 50, type: "argument" } ], //any arguments that the focus claim is used in
+    usedInLinks: [ { id: 1, type: "USED_IN", souce: 1, target: 2 } ], //any used in links that the claim is a part of
+    claim: { id: 1, body: "blah", state: 50, type: "claim"  }, //the claim who's id was requested from the API
+    arguments: [ { id: 1, state: 50, type: "argument" }], //all it's arguments
     argLinks: [ { id: 1, type: "OPPOSES", source: 1, target: 2 } ], //the links between the main claim and the arguments
-    subClaims: [ { id: 1, body: "blah", state: true, type: "claim" } ], //the claims that are included in all the arguments
+    subClaims: [ { id: 1, body: "blah", state: 50, type: "claim" } ], //the claims that are included in all the arguments
     subLinks: [ { id: 1, type: "USED_IN", source: 1, target: 2 } ] //the links between the arguments and the claims that make them up
 };
 
 var graph_data_looks_like_this = {
     nodes: [ //these are the nodes that will be drawn by the d3 force graph
-        { id: 1, type: "claim", body: "blah", state: false },
-        { id: 1, type: "argument", body: "blah", state: false } 
+        { id: 1, type: "claim", body: "blah", state: 50 },
+        { id: 1, type: "argument", body: "blah", state: 50 } 
     ],
     links: [ { id: 0, source: 1, target: 2, type:"TYPE" } ], //these are the links between nodes on the force graph
     clone_links: [ { source: 1, target: 2 } ] //for now, source is the claim node, target is the argument node that it's in

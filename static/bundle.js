@@ -756,8 +756,23 @@ var d3v4graph = function () {
             //wrap it
             claim = claim.enter().append("g").attr("class", "chart__claim");
 
+            //make the buttons - quarter arcs
+            var arcButton = function (start, end) {
+                return d3.arc().innerRadius(50).outerRadius(70).startAngle(start * (Math.PI / 180)).endAngle(end * (Math.PI / 180));
+            };
+
+            //top right, used in supporting args?
+            claim.append("path").attr("d", arcButton(0, 90));
+            //bottom right, opposing arge
+            claim.append("path").attr("d", arcButton(90, 180));
+            //bottom left, supporting arge
+            claim.append("path").attr("d", arcButton(180, 270));
+            //top lep, used in opposing args
+            claim.append("path").attr("d", arcButton(270, 360));
+
             //build the circle
-            claim.append("circle").attr("r", 50);
+            //claim.append("circle")
+            //    .attr("r", 50);
 
             //add the text
             claim.append("g").attr("class", "chart__claim-body-g").attr("transform", "translate(-50,-50)").append("switch").append("foreignObject") //needs a width and height
@@ -840,7 +855,7 @@ var d3v4graph = function () {
             //d.fy = null;
         }
 
-        eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '35'); //just to get us kicked off
+        eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '62'); //just to get us kicked off
     }
 };
 
