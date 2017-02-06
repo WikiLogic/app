@@ -71,26 +71,33 @@ export default {
         
         
         //5 Add the up arguments to the graph data. (the ones the main claim is used in)
-        // data.usedInArgs.forEach(function(argument){
-        //     graph = addArgumentToGraph(graph, argument);
-        // }); 
+        data.usedInArgs.forEach(function(argument){
+            graph = addArgumentToGraph(graph, argument);
+        }); 
 
-        // //6 add the relationships between the main claim and those arguments
-        //  if (data.usedInLinks.length > 0){
-        //     //TODO check for duplicates... ?
-        //     data.usedInLinks.forEach(function(newLink){
-        //         //check if if newLink is already in the graph
-        //         var graphAlreadyHasLink = graph.links.some(function(existingLink){
-        //             return (existingLink.id == newLink.id);
-        //         });
+        //6 add the relationships between the main claim and those arguments
+         if (data.usedInLinks.length > 0){
+            //TODO check for duplicates... ?
+            data.usedInLinks.forEach(function(usedInLink){
+                 graph = addLinkToGraph(graph, usedInLink);
+            });
+        }
 
-        //         if (!graphAlreadyHasLink) {
-        //             graph.links.push(newLink);
-        //         }
-        //     });
-        // }
+        //7. all the claims that make up those arguments too
+        if (data.usedInSiblings.length > 0){
+            data.usedInSiblings.forEach(function(sibling){
+                graph = addClaimToGraph(graph, sibling);
+            });
+        }
 
-        //7. Now that all is said and done. Check if any of the claims we just added exist in any argument groups already there
+        //8. and the links from those siblings to the used in arguments
+        if (data.usedInSiblingLinks.length > 0){
+            data.usedInSiblingLinks.forEach(function(usedInSiblingLink){
+                graph = addLinkToGraph(graph, usedInSiblingLink);
+            });
+        }
+
+        //8. Now that all is said and done. Check if any of the claims we just added exist in any argument groups already there
         //loop through all the arguments & their sub claims
         forEachArgSubClaimInGraph(graph, function(subClaim, argNode){
 

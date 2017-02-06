@@ -141,18 +141,30 @@ export default function () {
                     .endAngle(end * (Math.PI / 180));
             }
                 
-            //top right, used in supporting args?
+            //Up button
             claim.append("path")
-                .attr("d", arcButton(0, 90));
-            //bottom right, opposing arge
+                .attr("d", arcButton(-45, 45))
+                .on("click", function(event){
+                    eventManager.fire(actions.NODE_UP_CLICKED, event.id);
+                });
+            //right button
             claim.append("path")
-                .attr("d", arcButton(90, 180));
-            //bottom left, supporting arge
+                .attr("d", arcButton(45, 135))
+                .on("click", function(event){
+                    eventManager.fire(actions.NODE_RIGHT_CLICKED, event.id);
+                });
+            //left button
             claim.append("path")
-                .attr("d", arcButton(180, 270));
-            //top lep, used in opposing args
+                .attr("d", arcButton(-135, -45))
+                .on("click", function(event){
+                    eventManager.fire(actions.NODE_LEFT_CLICKED, event.id);
+                });
+            //down button
             claim.append("path")
-                .attr("d", arcButton(270, 360));
+                .attr("d", arcButton(135, 225))
+                .on("click", function(event){
+                    eventManager.fire(actions.NODE_DOWN_CLICKED, event.id);
+                });
 
             //build the circle
             //claim.append("circle")
