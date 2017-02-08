@@ -132,9 +132,43 @@ export default function () {
                 .append("g")
                     .attr("class", "chart__claim");
 
+            //make the buttons - quarter arcs
+            var arcButton = function(start, end){
+                return d3.arc()
+                    .innerRadius(50)
+                    .outerRadius(70)
+                    .startAngle(start * (Math.PI / 180))
+                    .endAngle(end * (Math.PI / 180));
+            }
+                
+            //Up button
+            claim.append("path")
+                .attr("d", arcButton(-45, 45))
+                .on("click", function(event){
+                    eventManager.fire(actions.NODE_UP_CLICKED, event.id);
+                });
+            //right button
+            claim.append("path")
+                .attr("d", arcButton(45, 135))
+                .on("click", function(event){
+                    eventManager.fire(actions.NODE_RIGHT_CLICKED, event.id);
+                });
+            //left button
+            claim.append("path")
+                .attr("d", arcButton(-135, -45))
+                .on("click", function(event){
+                    eventManager.fire(actions.NODE_LEFT_CLICKED, event.id);
+                });
+            //down button
+            claim.append("path")
+                .attr("d", arcButton(135, 225))
+                .on("click", function(event){
+                    eventManager.fire(actions.NODE_DOWN_CLICKED, event.id);
+                });
+
             //build the circle
-            claim.append("circle")
-                .attr("r", 50);
+            //claim.append("circle")
+            //    .attr("r", 50);
 
             //add the text
             claim.append("g")
@@ -237,6 +271,6 @@ export default function () {
             //d.fy = null;
         }
 
-        eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '35'); //just to get us kicked off
+        eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '62'); //just to get us kicked off
     }
 }

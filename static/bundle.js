@@ -95,7 +95,11 @@ var actions = {
     CLAIM_REQUEST_BY_ID_SUBMITTED: "CLAIM_REQUEST_BY_ID_SUBMITTED",
     API_REQUEST_BY_ID_SUBMITTED: "API_REQUEST_BY_ID_SUBMITTED",
     API_REQUEST_BY_ID_RETURNED: "API_REQUEST_BY_ID_RETURNED",
-    API_REQUEST_BY_ID_ERRORED: "API_REQUEST_BY_ID_ERRORED"
+    API_REQUEST_BY_ID_ERRORED: "API_REQUEST_BY_ID_ERRORED",
+    NODE_UP_CLICKED: "NODE_UP_CLICKED",
+    NODE_LEFT_CLICKED: "NODE_LEFT_CLICKED",
+    NODE_RIGHT_CLICKED: "NODE_RIGHT_CLICKED",
+    NODE_DOWN_CLICKED: "NODE_DOWN_CLICKED"
 };
 
 var graphDataConverter = {
@@ -487,26 +491,33 @@ var graphDataConverter$1 = {
         });
 
         //5 Add the up arguments to the graph data. (the ones the main claim is used in)
-        // data.usedInArgs.forEach(function(argument){
-        //     graph = addArgumentToGraph(graph, argument);
-        // }); 
+        data.usedInArgs.forEach(function (argument) {
+            graph = addArgumentToGraph$1(graph, argument);
+        });
 
-        // //6 add the relationships between the main claim and those arguments
-        //  if (data.usedInLinks.length > 0){
-        //     //TODO check for duplicates... ?
-        //     data.usedInLinks.forEach(function(newLink){
-        //         //check if if newLink is already in the graph
-        //         var graphAlreadyHasLink = graph.links.some(function(existingLink){
-        //             return (existingLink.id == newLink.id);
-        //         });
+        //6 add the relationships between the main claim and those arguments
+        if (data.usedInLinks.length > 0) {
+            //TODO check for duplicates... ?
+            data.usedInLinks.forEach(function (usedInLink) {
+                graph = addLinkToGraph(graph, usedInLink);
+            });
+        }
 
-        //         if (!graphAlreadyHasLink) {
-        //             graph.links.push(newLink);
-        //         }
-        //     });
-        // }
+        //7. all the claims that make up those arguments too
+        if (data.usedInSiblings.length > 0) {
+            data.usedInSiblings.forEach(function (sibling) {
+                graph = addClaimToGraph$1(graph, sibling);
+            });
+        }
 
-        //7. Now that all is said and done. Check if any of the claims we just added exist in any argument groups already there
+        //8. and the links from those siblings to the used in arguments
+        if (data.usedInSiblingLinks.length > 0) {
+            data.usedInSiblingLinks.forEach(function (usedInSiblingLink) {
+                graph = addLinkToGraph(graph, usedInSiblingLink);
+            });
+        }
+
+        //8. Now that all is said and done. Check if any of the claims we just added exist in any argument groups already there
         //loop through all the arguments & their sub claims
         forEachArgSubClaimInGraph(graph, function (subClaim, argNode) {
 
@@ -756,8 +767,31 @@ var d3v4graph = function () {
             //wrap it
             claim = claim.enter().append("g").attr("class", "chart__claim");
 
+            //make the buttons - quarter arcs
+            var arcButton = function (start, end) {
+                return d3.arc().innerRadius(50).outerRadius(70).startAngle(start * (Math.PI / 180)).endAngle(end * (Math.PI / 180));
+            };
+
+            //Up button
+            claim.append("path").attr("d", arcButton(-45, 45)).on("click", function (event) {
+                eventManager.fire(actions.NODE_UP_CLICKED, event.id);
+            });
+            //right button
+            claim.append("path").attr("d", arcButton(45, 135)).on("click", function (event) {
+                eventManager.fire(actions.NODE_RIGHT_CLICKED, event.id);
+            });
+            //left button
+            claim.append("path").attr("d", arcButton(-135, -45)).on("click", function (event) {
+                eventManager.fire(actions.NODE_LEFT_CLICKED, event.id);
+            });
+            //down button
+            claim.append("path").attr("d", arcButton(135, 225)).on("click", function (event) {
+                eventManager.fire(actions.NODE_DOWN_CLICKED, event.id);
+            });
+
             //build the circle
-            claim.append("circle").attr("r", 50);
+            //claim.append("circle")
+            //    .attr("r", 50);
 
             //add the text
             claim.append("g").attr("class", "chart__claim-body-g").attr("transform", "translate(-50,-50)").append("switch").append("foreignObject") //needs a width and height
@@ -840,7 +874,7 @@ var d3v4graph = function () {
             //d.fy = null;
         }
 
-        eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '35'); //just to get us kicked off
+        eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '62'); //just to get us kicked off
     }
 };
 

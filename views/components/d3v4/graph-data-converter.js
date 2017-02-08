@@ -3,20 +3,21 @@
 /* This file / module is responsible for taking the data from the API
  * and converting it into a structure that's ready for D3.
  */
-    // usedInArgs: [ { id: 1, state: true, type: "argument" } ], //any arguments that the focus claim is used in
-    // usedInLinks: [ { id: 1, type: "USED_IN", souce: 1, target: 2 } ], //any used in links that the claim is a part of
 var api_data_looks_like_this = {
-    claim: { id: 1, body: "blah", state: false, type: "claim"  }, //the claim who's id was requested from the API
-    arguments: [ { id: 1, state: true, type: "argument" }], //all it's arguments
+    usedInSiblings: [ { id: 1, body: "blah", state: 50, type: "claim" } ],
+    usedInArgs: [ { id: 1, state: 50, type: "argument" } ], //any arguments that the focus claim is used in
+    usedInLinks: [ { id: 1, type: "USED_IN", souce: 1, target: 2 } ], //any used in links that the claim is a part of
+    claim: { id: 1, body: "blah", state: 50, type: "claim"  }, //the claim who's id was requested from the API
+    arguments: [ { id: 1, state: 50, type: "argument" }], //all it's arguments
     argLinks: [ { id: 1, type: "OPPOSES", source: 1, target: 2 } ], //the links between the main claim and the arguments
-    subClaims: [ { id: 1, body: "blah", state: true, type: "claim" } ], //the claims that are included in all the arguments
+    subClaims: [ { id: 1, body: "blah", state: 50, type: "claim" } ], //the claims that are included in all the arguments
     subLinks: [ { id: 1, type: "USED_IN", source: 1, target: 2 } ] //the links between the arguments and the claims that make them up
 };
 
 var graph_data_looks_like_this = {
     nodes: [ //these are the nodes that will be drawn by the d3 force graph
-        { id: 1, type: "claim", body: "blah", state: false },
-        { id: 1, type: "argument", body: "blah", state: false } 
+        { id: 1, type: "claim", body: "blah", state: 50 },
+        { id: 1, type: "argument", body: "blah", state: 50 } 
     ],
     links: [ { id: 0, source: 1, target: 2, type:"TYPE" } ], //these are the links between nodes on the force graph
     clone_links: [ { source: 1, target: 2 } ] //for now, source is the claim node, target is the argument node that it's in
@@ -70,26 +71,33 @@ export default {
         
         
         //5 Add the up arguments to the graph data. (the ones the main claim is used in)
-        // data.usedInArgs.forEach(function(argument){
-        //     graph = addArgumentToGraph(graph, argument);
-        // }); 
+        data.usedInArgs.forEach(function(argument){
+            graph = addArgumentToGraph(graph, argument);
+        }); 
 
-        // //6 add the relationships between the main claim and those arguments
-        //  if (data.usedInLinks.length > 0){
-        //     //TODO check for duplicates... ?
-        //     data.usedInLinks.forEach(function(newLink){
-        //         //check if if newLink is already in the graph
-        //         var graphAlreadyHasLink = graph.links.some(function(existingLink){
-        //             return (existingLink.id == newLink.id);
-        //         });
+        //6 add the relationships between the main claim and those arguments
+         if (data.usedInLinks.length > 0){
+            //TODO check for duplicates... ?
+            data.usedInLinks.forEach(function(usedInLink){
+                 graph = addLinkToGraph(graph, usedInLink);
+            });
+        }
 
-        //         if (!graphAlreadyHasLink) {
-        //             graph.links.push(newLink);
-        //         }
-        //     });
-        // }
+        //7. all the claims that make up those arguments too
+        if (data.usedInSiblings.length > 0){
+            data.usedInSiblings.forEach(function(sibling){
+                graph = addClaimToGraph(graph, sibling);
+            });
+        }
 
-        //7. Now that all is said and done. Check if any of the claims we just added exist in any argument groups already there
+        //8. and the links from those siblings to the used in arguments
+        if (data.usedInSiblingLinks.length > 0){
+            data.usedInSiblingLinks.forEach(function(usedInSiblingLink){
+                graph = addLinkToGraph(graph, usedInSiblingLink);
+            });
+        }
+
+        //8. Now that all is said and done. Check if any of the claims we just added exist in any argument groups already there
         //loop through all the arguments & their sub claims
         forEachArgSubClaimInGraph(graph, function(subClaim, argNode){
 
