@@ -6,164 +6,62 @@ import graphDataConverter from './graph-data-converter.js';
 import forceSimulationConfig from './force-simulation-config.js';
 
 export default function () {
-    if (document.getElementById('d3')) {
+    if (document.getElementById('d3v4')) {
 
         var graph = {
             nodes: [],
             links: []
         };
         var updateGraph;
-        var processClaim;
-        var processArgument;
 
         eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
             graph = graphDataConverter.convertDataFromIdApi(graph, data);
-
-            updateGraph();
+             updateGraph();
+            // simulation.alpha(0.5).alphaDecay(0.2);
+             simulation.restart(); //restarts the simulation so any new nodes don't get stuck
         });
 
-        var width = document.getElementById('d3').offsetWidth,
+        var width = document.getElementById('d3v4').offsetWidth,
             height = width * 0.75;
 
         //create the svg & set it's width and height.
-        var svg = d3.select("#d3").append("svg")
+        var svg = d3.select("#d3v4").append("svg")
             .attr("width", width)
-            .attr("height", height);
+            .attr("height", height)
+            .attr("class", "chart");
+
+        //create a rect for the chart background
+        svg.append("rect")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("class", "chart__bg-rect");
+
+        var chart = svg.append("g") //this is the group that gets dragged and scaled
+            .attr("class", "chart__drag-g");
+
+        var zoom = d3.zoom()
+            .scaleExtent([0.1, 40])
+            .translateExtent([[-1000, -1000], [width + 1000, height + 1000]])
+            .on("zoom", function () {
+                //scale the chart
+                chart.attr("transform", d3.event.transform);
+            });
+        //listen to mouse scrolling (pinch?) on the chart group & scale it
+        svg.call(zoom);
 
         //https://github.com/d3/d3-force
         //configure the force graph simulation
-        var simulation = forceSimulationConfig.default(d3, width, height);
+        //var simulation = forceSimulationConfig.default(d3, width, height);
+        var simulation = d3.forceSimulation(graph.nodes);
 
-        var link = svg.append("g")
-            .attr("class", "links")
+
+        var link = chart.append("g")
+            .attr("class", "chart__links-g")
             .selectAll("line");
 
-        var nodes = svg.append("g")
-            .attr("class", "nodes")
+        var node = chart.append("g")
+            .attr("class", "chart__nodes-g")
             .selectAll("g");
-
-        processClaim = function (nodes) {
-            //claim node selection
-            var claims = nodes
-                .filter(function (d) { return (d.type == "claim"); })
-                .selectAll("g")
-                .data(function (node) { return [node]; });
-
-            //wrap it
-            claims = claims.enter()
-                .append("g")
-                .attr("class", "claim-node");
-
-            //build the circle
-            claims.append("circle")
-                .attr("r", 50);
-
-            //add the text
-            claims.append("g")
-                .attr("class", "claim-node__body")
-                .attr("transform", "translate(-50,-50)")
-                .append("switch")
-                .append("foreignObject")//needs a width and height
-                .attr("width", 100)
-                .attr("height", 100)
-                .attr("class", "claim-node__foreign-object")
-                .append("xhtml:div")
-                .attr("class", "claim-node__body-text")
-                .html(function (d) {
-                    return d.body;
-                });
-        }
-
-        processArgument = function (graphNodes, nodes) {
-            var claimRad = 50;
-            var claimInArgPadding = 5;
-
-            var argumentss = nodes
-                .filter(function (d) { return (d.type == "argument"); })
-                .selectAll("g")
-                .data(function (node) { return [node]; });
-
-            var argumentNodes = graphNodes.filter(function (d) { return (d.type == "argument"); });
-
-            //process argumetn groups
-            argumentNodes.forEach(function (argGroupNode) {
-
-                var claimCount = argGroupNode.subClaims.length;
-                var sqrRoot = Math.sqrt(claimCount);
-
-                var numbOfColumns = Math.floor(sqrRoot);
-                if (claimCount == 2 || claimCount == 3) numbOfColumns = 2;//the rule doesnt work for 2 and 3 and im too dumb to know why yet.
-                var numbOfRows = Math.ceil(claimCount / numbOfColumns);
-
-                argGroupNode.claimRad = ((claimRad + claimInArgPadding) * numbOfRows) + claimRad;
-                console.log(argGroupNode.claimRad);
-                argGroupNode.x = 100;
-                argGroupNode.y = 100;
-                argGroupNode.fixed = true;
-
-                //prcoess sub claims
-                for (var i = 0; i < claimCount; i++) {
-
-                    var dataContainer = argGroupNode.subClaims[i];
-                    //console.log(dataContainer);
-                    //check for duplicates
-                    // var found = nodes.filter(function (m) { return m._id == dataContainer.claim._id; }).length > 0;
-
-                    // if (!found) {
-                    var newNode = dataContainer;//.claim.properties || {};
-
-                    //set location to arg group xy then take halfargRad so we are not starting at centre and add half node so we account for nodes centre
-                    var insideCircleX = argGroupNode.x - (argGroupNode.claimRad / 2) + (claimRad / 2);
-                    var insideCircleY = argGroupNode.y - (argGroupNode.claimRad / 2) + (claimRad / 2);
-                    var distanceBetweenNodes = (claimRad * 2) + claimInArgPadding;
-                    newNode.x = insideCircleX + ((((i / numbOfColumns) % 1) * numbOfRows) * distanceBetweenNodes);
-                    newNode.y = insideCircleY + (Math.floor((i / numbOfRows)) * distanceBetweenNodes);
-
-                    // newNode._id = dataContainer.claim._id;
-                    // newNode.type = dataContainer.claim._id;
-                    newNode.fixed = true;
-                    newNode.index = i;
-                    newNode.claimRad = claimRad;
-
-                    //nodes.push(newNode);
-                    //}
-                };
-                //    nodes = argGroupNode.subClaims.data(graph.nodes); //this binds them to the new data
-
-                //             nodes.exit().remove(); //remove any extra node elements (beyond the length of the data coming in)
-                //             nodes = nodes.enter()
-                //                 .append("g") //this created the individual node wrapper group
-                //                 .merge(nodes);
-
-                //processClaim(nodes);
-            });
-
-
-
-            //wrap it
-            argumentss = argumentss.enter()
-                .append("g")
-                .attr("class", "claim-node");
-
-            //build the circle
-            argumentss.append("circle")
-                .attr("r", function (d) { return d.claimRad; });
-
-            //add the text
-            argumentss.append("g")
-                .attr("class", "claim-node__body")
-                .attr("transform", "translate(-50,-50)")
-                .append("switch")
-                .append("foreignObject")//needs a width and height
-                .attr("width", 100)
-                .attr("height", 100)
-                .attr("class", "claim-node__foreign-object")
-                .append("xhtml:div")
-                .attr("class", "claim-node__body-text")
-                .html(function (d) {
-                    return d.body;
-                });
-        }
 
         updateGraph = function () {
 
@@ -176,80 +74,167 @@ export default function () {
             link = link.enter()
                 .append("g")
                 .attr("class", function (d) {
-                    if (d.type == "OPPOSES") { return 'link link--opposes'; }
-                    if (d.type == "SUPPORTS") { return 'link link--supports'; }
-                    return 'white';
+                    if (d.type == "OPPOSES") { return 'chart__link chart__link--opposes'; }
+                    if (d.type == "SUPPORTS") { return 'chart__link chart__link--supports'; }
+                    return 'black';
                 })
                 .merge(link); //returns the selection of links merged with the new data
 
-            link.append("line") //now we create the links
+            //make the lines to show the links
+            link.selectAll("line")
+                .data(function (link) { return [link]; })
+                .enter()
+                .append("line") //now we create the links
                 .attr("stroke", function (d) {
                     if (d.type == "OPPOSES") { return 'red'; }
                     if (d.type == "SUPPORTS") { return 'green'; }
-                    return 'white';
+                    return 'black';
                 })
 
-            link.append("text")
+            //background text to occlude the line
+            var linkText = link.selectAll("text")
+                .data(function (link) { return [link]; })
+                .enter();
+
+            linkText.append("text")
+                .attr("class", "chart__link-text-bg")
                 .html(function (d) { return d.type; });
 
+            //add text to show the type of relationship
+            linkText.append("text")
+                .attr("class", "chart__link-text")
+                .html(function (d) { return d.type; });
+
+
             //node is already set up as a selection of g elements within the nodes group
-            nodes = nodes.data(graph.nodes); //this binds them to the new data
-
-            nodes.exit().remove(); //remove any extra node elements (beyond the length of the data coming in)
-            nodes = nodes.enter()
+            node = node.data(graph.nodes); //this binds them to the new data
+            node.exit().remove(); //remove any extra node elements (beyond the length of the data coming in)
+            node = node.enter()
                 .append("g") //this created the individual node wrapper group
-                .merge(nodes); //returns the selection of nodes merged with the new data
+                .merge(node); //returns the selection of nodes merged with the new data
 
+            node.call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
 
-            processClaim(nodes);
+            //claim node selection
+            var claim = node
+                .filter(function (d) { return (d.type == "claim"); })
+                .selectAll("g")
+                .data(function (node) { return [node]; });
 
-            processArgument(graph.nodes, nodes);
+            //wrap it
+            claim = claim.enter()
+                .append("g")
+                .attr("class", "chart__claim");
+
+            //make the buttons - quarter arcs
+            var arcButton = function (start, end) {
+                return d3.arc()
+                    .innerRadius(50)
+                    .outerRadius(70)
+                    .startAngle(start * (Math.PI / 180))
+                    .endAngle(end * (Math.PI / 180));
+            }
+
+            //Up button
+            claim.append("path")
+                .attr("d", arcButton(-45, 45))
+                .on("click", function (event) {
+                    eventManager.fire(actions.NODE_UP_CLICKED, event.id);
+                });
+            //right button
+            claim.append("path")
+                .attr("d", arcButton(45, 135))
+                .on("click", function (event) {
+                    eventManager.fire(actions.NODE_RIGHT_CLICKED, event.id);
+                });
+            //left button
+            claim.append("path")
+                .attr("d", arcButton(-135, -45))
+                .on("click", function (event) {
+                    eventManager.fire(actions.NODE_LEFT_CLICKED, event.id);
+                });
+            //down button
+            claim.append("path")
+                .attr("d", arcButton(135, 225))
+                .on("click", function (event) {
+                    eventManager.fire(actions.NODE_DOWN_CLICKED, event.id);
+                });
+
+            //add the text
+            claim.append("g")
+                .attr("class", "chart__claim-body-g")
+                .attr("transform", "translate(0,0)")
+                .append("switch")
+                .append("foreignObject")//needs a width and height
+                .attr("width", 100)
+                .attr("height", 100)
+                .append("xhtml:div")
+                .attr("class", "chart__claim-text")
+                .html(function (d) {
+                    return d.body;
+                });
 
             //the argument nodes selection
-            // var argumentss = nodes
-            //     .filter(function (d) { return (d.type == "argument"); })
-            //     .selectAll("g")
-            //     .data(function (node) {
-            //         return [node];
-            //     });
+            var argument = node
+                .filter(function (d) { return (d.type == "argument"); })
+                .selectAll("g")
+                .data(function (node) { return [node]; });
 
-            // argumentss = argumentss.enter()
-            //     .append("g")
-            //     .attr("class", "argument-node")
-            //     .attr("transform", "translate(-180,0)")
-            //     .append("switch")
-            //     .append("foreignObject")//needs a width and height
-            //     .attr("width", 160)
-            //     .attr("height", 100)
-            //     .attr("class", "argument-node__foreign-object");
+            argument.enter().append("circle")
+                .attr("class", "node")
+                .attr("r", function (d) { return d.radius; })
+                .style("opacity", 0.5);
 
+            argument = argument.enter()
+                .append("g")
+                .attr("class", "chart__argument")
+                .attr("transform", "translate(0,0)")
+                .append("switch");
+           
+     
 
-            // //make the sub claim selection
-            // var argumentSubClaim = argumentss.selectAll("div")
-            //     .data(function (d) { return d.subClaims; }); //bind it to the sub claims of an argument
+            argument = argument
+            .append("foreignObject")//needs a width and height
+                .attr("width", 160)
+                .attr("height", 100);
 
-            // console.log(argumentss);
-            // //processClaim(argumentSubClaim);
+            //build the sub claims
+            var subClaim = argument.selectAll("div")
+                .data(function (d) { return d.subClaims; }); //bind it to the sub claims of an argument
 
-            // argumentSubClaim.enter()
-            //     .append("xhtml:div") //create the selection
-            //     .attr("class", "argument-node__sub-claim")
-            //     .html(function (d) {
-            //         return d.body;
-            //     })
-            //     .on("click", function (event) {
-            //         console.log("sub claim clicked!", event);
-            //         eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, event.id);
-            //     });
+            subClaim = subClaim.enter()
+                .append("xhtml:div") //create the selection
+                .attr("class", "chart__sub-claim");
+
+            subClaim.append("xhtml:div")
+                .attr("class", "chart__sub-claim-text")
+                .html(function (d) {
+                    return d.body;
+                });
+
+            subClaim.append("xhtml:div")
+                .attr("class", "chart__sub-claim-button")
+                .html("+")
+                .on("click", function (event) {
+                    eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, event.id);
+                })
+                .on("mousedown", function () {
+                    d3.event.stopPropagation();
+                });
 
 
             //=========================== start the force layout
             simulation
                 .nodes(graph.nodes)
                 .on("tick", ticked);
-
-            simulation.force("link")
-                .links(graph.links);
+            // simulation.force("link")
+            //     .links(graph.links);
+            //this is read for the initial value
+            // simulation.force("xAxis", d3.forceY(function (d) { return d.x; }))
+            //     .force("yAxis", d3.forceY(function (d) { return d.y; }));
 
             function ticked() {
                 link.selectAll("line")
@@ -261,13 +246,38 @@ export default function () {
                 link.selectAll("text")
                     .attr("x", function (d) { return d.target.x - ((d.target.x - d.source.x) / 2) })
                     .attr("y", function (d) { return d.target.y - ((d.target.y - d.source.y) / 2) });
+                //this still needed for some reason
+                node
+                    .attr("transform", function (d) {
+                        return "translate(" + d.x + "," + d.y + ")";
+                    });
 
-                nodes.attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
-
+                // node.attr("cx", 600)//function (d) { return d.x; })
+                //     .attr("cy", function (d) { return d.y; })
                 //make a relationship array for clones (claims that are in an argument & have their own node).
             }
+
         };
 
-        eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '234'); //just to get us kicked off
+
+        function dragstarted(d) {
+            simulation.restart();
+            simulation.alpha(1.0);
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(d) {
+            d.fx = d3.event.x;
+            d.fy = d3.event.y;
+        }
+
+        function dragended(d) {
+            d.fx = d.x;
+            d.fy = d.y;
+            simulation.alphaTarget(0.1);
+        }
+
+        eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '62'); //just to get us kicked off
     }
 }
