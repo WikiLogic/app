@@ -28,11 +28,11 @@ var graph_data_looks_like_this = {
 export default {
     convertDataFromIdApi: function (graph, data) {
 
-        var claimRad = 100;
+        var claimRad = 70;
         var claimInArgPadding = 5;
 
         //1. Add the main claim to the graph data.
-        graph = addClaimToGraph(graph, data.claim);
+        graph = addClaimToGraph(graph, data.claim, claimRad);
         console.log(data);
 
         //2.1 Add the down arguments to the graph data.
@@ -50,7 +50,7 @@ export default {
             argument.numbOfColumns = Math.floor(sqrRoot);
             if (claimCount == 2 || claimCount == 3) argument.numbOfColumns = 2;//the rule doesnt work for 2 and 3 and im too dumb to know why yet.
             argument.numbOfRows = Math.ceil(claimCount / argument.numbOfColumns);
-            argument.radius = ((claimRad + claimInArgPadding) * argument.numbOfRows);
+            argument.radius = ((claimRad + claimInArgPadding) * argument.numbOfRows) + claimRad;//+claimRad at end to make up for fact that its cicrle not square containter
 
             argument.x = nextArgPosition;
             var tempFudgeFactor = 200;//this is becuase i need to work out where to anchor xy positions.
@@ -175,6 +175,7 @@ function isClaimInGraph(graph, claim) {
 function addSubClaimToGraph(graph, claimRad, claimInArgPadding, argGroupNode, i) {
     
     var claim = argGroupNode.subClaims[i];
+    claim.radius = claimRad;
     //check if the claim is already in the graph as a node, we don't want any duplicates!
     var graphHasClaim = graph.nodes.some(function (node) {
         return (node.id == claim.id);
@@ -185,8 +186,6 @@ function addSubClaimToGraph(graph, claimRad, claimInArgPadding, argGroupNode, i)
         return graph;
     }
     else {
-
-
 
         var insideCircleX = argGroupNode.x - (argGroupNode.radius / 2) + (claimRad / 2);
         var insideCircleY = argGroupNode.y - (argGroupNode.radius / 2) + (claimRad / 2);
@@ -208,7 +207,7 @@ function addSubClaimToGraph(graph, claimRad, claimInArgPadding, argGroupNode, i)
     };
 }
 
-function addClaimToGraph(graph, claim) {
+function addClaimToGraph(graph, claim, claimRad) {
     //check if the claim is already in the graph as a node, we don't want any duplicates!
     var graphHasClaim = graph.nodes.some(function (node) {
         return (node.id == claim.id);
@@ -222,7 +221,8 @@ function addClaimToGraph(graph, claim) {
 
         claim.x = 600;//+ (graph.nodes.length * 100);
         claim.y = 100;//+ (graph.nodes.length * 100);
-
+        claim.radius = claimRad;
+        
         graph.nodes.push(claim);
         return graph;
     };

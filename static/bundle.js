@@ -417,11 +417,11 @@ var d3graph = function () {
 var graphDataConverter$1 = {
     convertDataFromIdApi: function (graph, data) {
 
-        var claimRad = 100;
+        var claimRad = 70;
         var claimInArgPadding = 5;
 
         //1. Add the main claim to the graph data.
-        graph = addClaimToGraph$1(graph, data.claim);
+        graph = addClaimToGraph$1(graph, data.claim, claimRad);
         console.log(data);
 
         //2.1 Add the down arguments to the graph data.
@@ -439,7 +439,7 @@ var graphDataConverter$1 = {
             argument.numbOfColumns = Math.floor(sqrRoot);
             if (claimCount == 2 || claimCount == 3) argument.numbOfColumns = 2; //the rule doesnt work for 2 and 3 and im too dumb to know why yet.
             argument.numbOfRows = Math.ceil(claimCount / argument.numbOfColumns);
-            argument.radius = (claimRad + claimInArgPadding) * argument.numbOfRows;
+            argument.radius = (claimRad + claimInArgPadding) * argument.numbOfRows + claimRad; //+claimRad at end to make up for fact that its cicrle not square containter
 
             argument.x = nextArgPosition;
             var tempFudgeFactor = 200; //this is becuase i need to work out where to anchor xy positions.
@@ -560,6 +560,7 @@ function isClaimInGraph(graph, claim) {
 function addSubClaimToGraph(graph, claimRad, claimInArgPadding, argGroupNode, i) {
 
     var claim = argGroupNode.subClaims[i];
+    claim.radius = claimRad;
     //check if the claim is already in the graph as a node, we don't want any duplicates!
     var graphHasClaim = graph.nodes.some(function (node) {
         return node.id == claim.id;
@@ -588,7 +589,7 @@ function addSubClaimToGraph(graph, claimRad, claimInArgPadding, argGroupNode, i)
     }
 }
 
-function addClaimToGraph$1(graph, claim) {
+function addClaimToGraph$1(graph, claim, claimRad) {
     //check if the claim is already in the graph as a node, we don't want any duplicates!
     var graphHasClaim = graph.nodes.some(function (node) {
         return node.id == claim.id;
@@ -601,6 +602,7 @@ function addClaimToGraph$1(graph, claim) {
 
         claim.x = 600; //+ (graph.nodes.length * 100);
         claim.y = 100; //+ (graph.nodes.length * 100);
+        claim.radius = claimRad;
 
         graph.nodes.push(claim);
         return graph;
@@ -763,30 +765,38 @@ var d3v4graph = function () {
             claim = claim.enter().append("g").attr("class", "chart__claim");
 
             //make the buttons - quarter arcs
-            var arcButton = function (start, end) {
-                return d3.arc().innerRadius(50).outerRadius(70).startAngle(start * (Math.PI / 180)).endAngle(end * (Math.PI / 180));
+            var arcButton = function (start, end, radius) {
+                return d3.arc().innerRadius(50).outerRadius(radius).startAngle(start * (Math.PI / 180)).endAngle(end * (Math.PI / 180));
             };
 
             //Up button
-            claim.append("path").attr("d", arcButton(-45, 45)).on("click", function (event) {
+            claim.append("path").attr("d", arcButton(-45, 45, function (d) {
+                return d.radius;
+            })).on("click", function (event) {
                 eventManager.fire(actions.NODE_UP_CLICKED, event.id);
             });
             //right button
-            claim.append("path").attr("d", arcButton(45, 135)).on("click", function (event) {
+            claim.append("path").attr("d", arcButton(45, 135, function (d) {
+                return d.radius;
+            })).on("click", function (event) {
                 eventManager.fire(actions.NODE_RIGHT_CLICKED, event.id);
             });
             //left button
-            claim.append("path").attr("d", arcButton(-135, -45)).on("click", function (event) {
+            claim.append("path").attr("d", arcButton(-135, -45, function (d) {
+                return d.radius;
+            })).on("click", function (event) {
                 eventManager.fire(actions.NODE_LEFT_CLICKED, event.id);
             });
             //down button
-            claim.append("path").attr("d", arcButton(135, 225)).on("click", function (event) {
+            claim.append("path").attr("d", arcButton(135, 225, function (d) {
+                return d.radius;
+            })).on("click", function (event) {
                 eventManager.fire(actions.NODE_DOWN_CLICKED, event.id);
             });
 
             //add the text
             claim.append("g").attr("class", "chart__claim-body-g").attr("transform", "translate(0,0)").append("switch").append("foreignObject") //needs a width and height
-            .attr("width", 100).attr("height", 100).append("xhtml:div").attr("class", "chart__claim-text").html(function (d) {
+            .attr("width", 100).attr("height", 100).attr("x", -50).attr("y", -50).append("xhtml:div").attr("class", "chart__claim-text").html(function (d) {
                 return d.body;
             });
 

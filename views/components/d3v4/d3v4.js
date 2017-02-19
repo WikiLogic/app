@@ -130,35 +130,35 @@ export default function () {
                 .attr("class", "chart__claim");
 
             //make the buttons - quarter arcs
-            var arcButton = function (start, end) {
+            var arcButton = function (start, end, radius) {
                 return d3.arc()
                     .innerRadius(50)
-                    .outerRadius(70)
+                    .outerRadius(radius)
                     .startAngle(start * (Math.PI / 180))
                     .endAngle(end * (Math.PI / 180));
             }
 
             //Up button
             claim.append("path")
-                .attr("d", arcButton(-45, 45))
+                .attr("d", arcButton(-45, 45, function (d) { return d.radius; }))
                 .on("click", function (event) {
                     eventManager.fire(actions.NODE_UP_CLICKED, event.id);
                 });
             //right button
             claim.append("path")
-                .attr("d", arcButton(45, 135))
+                .attr("d", arcButton(45, 135, function (d) { return d.radius; }))
                 .on("click", function (event) {
                     eventManager.fire(actions.NODE_RIGHT_CLICKED, event.id);
                 });
             //left button
             claim.append("path")
-                .attr("d", arcButton(-135, -45))
+                .attr("d", arcButton(-135, -45, function (d) { return d.radius; }))
                 .on("click", function (event) {
                     eventManager.fire(actions.NODE_LEFT_CLICKED, event.id);
                 });
             //down button
             claim.append("path")
-                .attr("d", arcButton(135, 225))
+                .attr("d", arcButton(135, 225, function (d) { return d.radius; }))
                 .on("click", function (event) {
                     eventManager.fire(actions.NODE_DOWN_CLICKED, event.id);
                 });
@@ -171,6 +171,8 @@ export default function () {
                 .append("foreignObject")//needs a width and height
                 .attr("width", 100)
                 .attr("height", 100)
+                .attr("x", -50)
+                .attr("y", -50)
                 .append("xhtml:div")
                 .attr("class", "chart__claim-text")
                 .html(function (d) {
