@@ -57,9 +57,8 @@ export default {
             argument.y = data.claim.y + claimRad + tempFudgeFactor;
             nextArgPosition += argument.radius;
            
-            console.log("coords");
-            console.log(argument.x );
-            console.log(argument.y);
+            console.log("argument.radius");
+            console.log(argument.radius );
 
             graph.nodes.push(argument);
 

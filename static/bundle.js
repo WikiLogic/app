@@ -188,7 +188,7 @@ function addArgumentToGraph(graph, argument) {
  */
 
 var d3graph = function () {
-    if (document.getElementById('d3v4')) {
+    if (document.getElementById('d3')) {
 
         var graph = {
             nodes: [],
@@ -446,9 +446,8 @@ var graphDataConverter$1 = {
             argument.y = data.claim.y + claimRad + tempFudgeFactor;
             nextArgPosition += argument.radius;
 
-            console.log("coords");
-            console.log(argument.x);
-            console.log(argument.y);
+            console.log("argument.radius");
+            console.log(argument.radius);
 
             graph.nodes.push(argument);
 

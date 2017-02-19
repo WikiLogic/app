@@ -6,7 +6,7 @@ import graphDataConverter from './graph-data-converter.js';
 import forceSimulationConfig from './force-simulation-config.js';
 
 export default function () {
-    if (document.getElementById('d3v4')) {
+    if (document.getElementById('d3')) {
 
         var graph = {
             nodes: [],
