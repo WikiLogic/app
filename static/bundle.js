@@ -414,14 +414,18 @@ var d3graph = function () {
     }
 };
 
+var claimRad = 70;
+var claimInArgPadding = 5;
+
 var graphDataConverter$1 = {
     convertDataFromIdApi: function (graph, data) {
 
-        var claimRad = 70;
-        var claimInArgPadding = 5;
-
         //1. Add the main claim to the graph data.
-        graph = addClaimToGraph$1(graph, data.claim, claimRad);
+        /*
+        Every search starts a new canvas. We could add to the existing but it adds complexity for a  feature that i do not think will be used.
+        Therefore the first claim can be hard set with a position. Later positions will be based on whats immediately above it.
+         */
+        graph = addClaimToGraph$1(graph, data.claim);
         console.log(data);
 
         //2.1 Add the down arguments to the graph data.
@@ -430,30 +434,8 @@ var graphDataConverter$1 = {
         // });
 
         //2.1 Add the arg group to graph data
-        var nextArgPosition = data.claim.x;
         data.arguments.forEach(function (argument) {
-            argument.subClaims = data.subClaims; //an array for this argument to hold a reference to it's sub claim objects
-
-            var claimCount = data.subClaims.length;
-            var sqrRoot = Math.sqrt(claimCount);
-            argument.numbOfColumns = Math.floor(sqrRoot);
-            if (claimCount == 2 || claimCount == 3) argument.numbOfColumns = 2; //the rule doesnt work for 2 and 3 and im too dumb to know why yet.
-            argument.numbOfRows = Math.ceil(claimCount / argument.numbOfColumns);
-            argument.radius = (claimRad + claimInArgPadding) * argument.numbOfRows + claimRad; //+claimRad at end to make up for fact that its cicrle not square containter
-
-            argument.x = nextArgPosition;
-            var tempFudgeFactor = 200; //this is becuase i need to work out where to anchor xy positions.
-            argument.y = data.claim.y + claimRad + tempFudgeFactor;
-            nextArgPosition += argument.radius;
-
-            console.log("argument.radius");
-            console.log(argument.radius);
-
-            graph.nodes.push(argument);
-
-            for (var i = 0; i < argument.subClaims.length; i++) {
-                graph = addSubClaimToGraph(graph, claimRad, claimInArgPadding, argument, i);
-            }
+            graph = addArgumentToGraph$1(graph, argument, data);
         });
 
         //3. add the relationships between the claims and their arguments (if they haven't already been established).
@@ -488,9 +470,9 @@ var graphDataConverter$1 = {
         });
 
         //5 Add the up arguments to the graph data. (the ones the main claim is used in)
-        data.usedInArgs.forEach(function (argument) {
-            graph = addArgumentToGraph$1(graph, argument);
-        });
+        // data.usedInArgs.forEach(function (argument) {
+        //     graph = addArgumentToGraph(graph, argument);
+        // });
 
         //6 add the relationships between the main claim and those arguments
         if (data.usedInLinks.length > 0) {
@@ -557,7 +539,27 @@ function isClaimInGraph(graph, claim) {
     });
 }
 
-function addSubClaimToGraph(graph, claimRad, claimInArgPadding, argGroupNode, i) {
+function addClaimToGraph$1(graph, claim) {
+    //check if the claim is already in the graph as a node, we don't want any duplicates!
+    var graphHasClaim = graph.nodes.some(function (node) {
+        return node.id == claim.id;
+    });
+
+    if (graphHasClaim) {
+        //"fails" sliently, but I'm not sure if you'd really consider this a fail 
+        return graph;
+    } else {
+        //perhaps should be based on width and height to get the top middle?
+        claim.x = 600;
+        claim.y = 50;
+        claim.radius = claimRad;
+
+        graph.nodes.push(claim);
+        return graph;
+    }
+}
+
+function addSubClaimToGraph(graph, argGroupNode, i) {
 
     var claim = argGroupNode.subClaims[i];
     claim.radius = claimRad;
@@ -573,43 +575,17 @@ function addSubClaimToGraph(graph, claimRad, claimInArgPadding, argGroupNode, i)
 
         var insideCircleX = argGroupNode.x - argGroupNode.radius / 2 + claimRad / 2;
         var insideCircleY = argGroupNode.y - argGroupNode.radius / 2 + claimRad / 2;
-        console.log("subCoods");
-        console.log(argGroupNode.x);
-        console.log(argGroupNode.radius);
-        console.log(claimRad);
 
         var distanceBetweenNodes = claimRad * 2 + claimInArgPadding;
         claim.x = insideCircleX + i / argGroupNode.numbOfColumns % 1 * argGroupNode.numbOfRows * distanceBetweenNodes;
         claim.y = insideCircleY + Math.floor(i / argGroupNode.numbOfRows) * distanceBetweenNodes;
 
-        //claim.claimRad = claimRad;
-
         graph.nodes.push(claim);
         return graph;
     }
 }
 
-function addClaimToGraph$1(graph, claim, claimRad) {
-    //check if the claim is already in the graph as a node, we don't want any duplicates!
-    var graphHasClaim = graph.nodes.some(function (node) {
-        return node.id == claim.id;
-    });
-
-    if (graphHasClaim) {
-        //"fails" sliently, but I'm not sure if you'd really consider this a fail 
-        return graph;
-    } else {
-
-        claim.x = 600; //+ (graph.nodes.length * 100);
-        claim.y = 100; //+ (graph.nodes.length * 100);
-        claim.radius = claimRad;
-
-        graph.nodes.push(claim);
-        return graph;
-    }
-}
-
-function addArgumentToGraph$1(graph, argument) {
+function addArgumentToGraph$1(graph, argument, data) {
     var graphHasArgument = graph.nodes.some(function (node) {
         return node.id == argument.id;
     });
@@ -617,8 +593,29 @@ function addArgumentToGraph$1(graph, argument) {
     if (graphHasArgument) {
         return graph;
     } else {
-        argument.subClaims = []; //an array for this argument to hold a reference to it's sub claim objects
+        var nextArgPosition = data.claim.x;
+        argument.subClaims = data.subClaims; //an array for this argument to hold a reference to it's sub claim objects
+
+        var claimCount = data.subClaims.length;
+        var sqrRoot = Math.sqrt(claimCount);
+        argument.numbOfColumns = Math.floor(sqrRoot);
+        if (claimCount == 2 || claimCount == 3) argument.numbOfColumns = 2; //the rule doesnt work for 2 and 3 and im too dumb to know why yet.
+        argument.numbOfRows = Math.ceil(claimCount / argument.numbOfColumns);
+
+        //the radius needs to be such that all the arguments can be arranged in a square and teh square fits inside the circle
+        var lengthOfSquare = claimRad * 2 * argument.numbOfColumns + claimInArgPadding * (argument.numbOfColumns + 1);
+        //radisu of circle will be hypotenuse of the square
+        argument.radius = Math.sqrt(lengthOfSquare * lengthOfSquare + lengthOfSquare * lengthOfSquare) / 2;
+
+        argument.x = nextArgPosition;
+        argument.y = data.claim.y + claimRad + argument.radius;
+        nextArgPosition += argument.radius;
+
         graph.nodes.push(argument);
+
+        for (var i = 0; i < argument.subClaims.length; i++) {
+            graph = addSubClaimToGraph(graph, argument, i);
+        }
         return graph;
     }
 }
