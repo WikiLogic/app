@@ -602,9 +602,7 @@ function addSubClaimToGraph(graph, argGroupNode, i) {
 
 function addArgumentToGraph$1(graph, argument, data) {
 
-    console.log("data");
-    console.log(data);
-    console.log("data");
+    console.log("graph", graph);
 
     var graphHasArgument = graph.nodes.some(function (node) {
         return node.id == argument.id;
@@ -613,7 +611,9 @@ function addArgumentToGraph$1(graph, argument, data) {
     if (graphHasArgument) {
         return graph;
     } else {
-        var nextArgPosition = data.claim.x;
+        console.log("graph[0].nodes", graph.nodes[0].x);
+        var nextArgPosition = graph.nodes[0].x;
+
         argument.subClaims = data.subClaims; //an array for this argument to hold a reference to it's sub claim objects
 
         var claimCount = data.subClaims.length;
@@ -628,7 +628,7 @@ function addArgumentToGraph$1(graph, argument, data) {
         argument.radius = Math.sqrt(lengthOfSquare * lengthOfSquare + lengthOfSquare * lengthOfSquare) / 2;
 
         argument.x = nextArgPosition;
-        argument.y = data.claim.y + claimRad + argument.radius;
+        argument.y = graph.nodes[0].y + claimRad + argument.radius;
         nextArgPosition += argument.radius;
 
         graph.nodes.push(argument);
