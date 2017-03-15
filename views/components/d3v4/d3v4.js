@@ -15,10 +15,17 @@ export default function () {
         var updateGraph;
 
         eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
+            console.log("Refresh graph");
             graph = graphDataConverter.convertDataFromIdApi(graph, data);
-             updateGraph();
-            // simulation.alpha(0.5).alphaDecay(0.2);
-             simulation.restart(); //restarts the simulation so any new nodes don't get stuck
+            updateGraph();
+            simulation.restart(); //restarts the simulation so any new nodes don't get stuck
+        });
+
+        eventManager.subscribe(actions.API_ARG_REQUEST_BY_ID_RETURNED, function (data) {
+
+            graph = graphDataConverter.convertArgDataFromIdApi(graph, data);
+            updateGraph();
+            simulation.restart(); 
         });
 
         var width = document.getElementById('d3v4').offsetWidth,
@@ -160,8 +167,16 @@ export default function () {
             claim.append("path")
                 .attr("d", arcButton(135, 225, function (d) { return d.radius; }))
                 .on("click", function (event) {
-                    eventManager.fire(actions.NODE_DOWN_CLICKED, event.id);
+                    eventManager.fire(actions.ARG_REQUEST_BY_ID_SUBMITTED, event.id);
+                })
+                .on("mousedown", function () {
+                    d3.event.stopPropagation();
                 });
+
+
+
+
+
 
             //add the text
             claim.append("g")
@@ -195,11 +210,11 @@ export default function () {
                 .attr("class", "chart__argument")
                 .attr("transform", "translate(0,0)")
                 .append("switch");
-           
-     
+
+
 
             argument = argument
-            .append("foreignObject")//needs a width and height
+                .append("foreignObject")//needs a width and height
                 .attr("width", 160)
                 .attr("height", 100);
 
@@ -279,7 +294,5 @@ export default function () {
             d.fy = d.y;
             simulation.alphaTarget(0.1);
         }
-
-        eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '62'); //just to get us kicked off
     }
 }

@@ -27,6 +27,17 @@ var claimRad = 70;
 var claimInArgPadding = 5;
 
 export default {
+
+    convertArgDataFromIdApi: function (graph, data) {
+
+        //2.1 Add the arg group to graph data
+        data.arguments.forEach(function (argument) {
+            graph = addArgumentToGraph(graph, argument, data);
+        });
+
+        return graph;
+    },
+
     convertDataFromIdApi: function (graph, data) {
 
         //1. Add the main claim to the graph data.
@@ -35,7 +46,6 @@ export default {
         Therefore the first claim can be hard set with a position. Later positions will be based on whats immediately above it.
          */
         graph = addClaimToGraph(graph, data.claim);
-        console.log(data);
 
         //2.1 Add the down arguments to the graph data.
         // data.arguments.forEach(function (argument) {
@@ -43,43 +53,43 @@ export default {
         // });
 
         //2.1 Add the arg group to graph data
-        data.arguments.forEach(function (argument) {
-            graph = addArgumentToGraph(graph, argument, data);
-        });
+        // data.arguments.forEach(function (argument) {
+        //     graph = addArgumentToGraph(graph, argument, data);
+        // });
 
 
         //3. add the relationships between the claims and their arguments (if they haven't already been established).
-        if (data.argLinks.length > 0) {
-            data.argLinks.forEach(function (newLink) {
-                console.group("Adding argLink to graph");
-                graph = addLinkToGraph(graph, newLink);
-                console.groupEnd();
+        // if (data.argLinks.length > 0) {
+        //     data.argLinks.forEach(function (newLink) {
+        //         console.group("Adding argLink to graph");
+        //         graph = addLinkToGraph(graph, newLink);
+        //         console.groupEnd();
 
-            });
-        }
+        //     });
+        // }
 
 
         //4. give the arguments references to their sub claim objects: subLinks == subclaim(source) -> argument(target)
-        data.subLinks.forEach(function (subLink) {
-            //find the argument
-            var thisArgument = graph.nodes.find(function (node) {
-                return (node.id == subLink.target);
-            });
+        // data.subLinks.forEach(function (subLink) {
+        //     //find the argument
+        //     var thisArgument = graph.nodes.find(function (node) {
+        //         return (node.id == subLink.target);
+        //     });
 
-            //check if it already has the sub claim
-            var subClaimIsLinked = thisArgument.subClaims.some(function (node) {
-                return (node.id == subLink.source)
-            });
+        //     //check if it already has the sub claim
+        //     var subClaimIsLinked = thisArgument.subClaims.some(function (node) {
+        //         return (node.id == subLink.source)
+        //     });
 
-            if (!subClaimIsLinked) {
-                //find the subClaim (the source) that is referenced in this relationship
-                var subClaimToLink = data.subClaims.find(function (subClaim) {
-                    return (subClaim.id == subLink.source);
-                });
+        //     if (!subClaimIsLinked) {
+        //         //find the subClaim (the source) that is referenced in this relationship
+        //         var subClaimToLink = data.subClaims.find(function (subClaim) {
+        //             return (subClaim.id == subLink.source);
+        //         });
 
-                thisArgument.subClaims.push(subClaimToLink);
-            }
-        });
+        //         thisArgument.subClaims.push(subClaimToLink);
+        //     }
+        // });
 
 
         //5 Add the up arguments to the graph data. (the ones the main claim is used in)
@@ -201,6 +211,12 @@ function addSubClaimToGraph(graph, argGroupNode, i) {
 }
 
 function addArgumentToGraph(graph, argument, data) {
+
+
+    console.log("data");
+    console.log(data);
+    console.log("data");
+
     var graphHasArgument = graph.nodes.some(function (node) {
         return (node.id == argument.id);
     });

@@ -99,7 +99,8 @@ var actions = {
     NODE_UP_CLICKED: "NODE_UP_CLICKED",
     NODE_LEFT_CLICKED: "NODE_LEFT_CLICKED",
     NODE_RIGHT_CLICKED: "NODE_RIGHT_CLICKED",
-    NODE_DOWN_CLICKED: "NODE_DOWN_CLICKED"
+    NODE_DOWN_CLICKED: "NODE_DOWN_CLICKED",
+    API_ARG_REQUEST_BY_ID_RETURNED: "API_ARG_REQUEST_BY_ID_RETURNED"
 };
 
 var graphDataConverter = {
@@ -418,6 +419,17 @@ var claimRad = 70;
 var claimInArgPadding = 5;
 
 var graphDataConverter$1 = {
+
+    convertArgDataFromIdApi: function (graph, data) {
+
+        //2.1 Add the arg group to graph data
+        data.arguments.forEach(function (argument) {
+            graph = addArgumentToGraph$1(graph, argument, data);
+        });
+
+        return graph;
+    },
+
     convertDataFromIdApi: function (graph, data) {
 
         //1. Add the main claim to the graph data.
@@ -426,7 +438,6 @@ var graphDataConverter$1 = {
         Therefore the first claim can be hard set with a position. Later positions will be based on whats immediately above it.
          */
         graph = addClaimToGraph$1(graph, data.claim);
-        console.log(data);
 
         //2.1 Add the down arguments to the graph data.
         // data.arguments.forEach(function (argument) {
@@ -434,40 +445,44 @@ var graphDataConverter$1 = {
         // });
 
         //2.1 Add the arg group to graph data
-        data.arguments.forEach(function (argument) {
-            graph = addArgumentToGraph$1(graph, argument, data);
-        });
+        // data.arguments.forEach(function (argument) {
+        //     graph = addArgumentToGraph(graph, argument, data);
+        // });
+
 
         //3. add the relationships between the claims and their arguments (if they haven't already been established).
-        if (data.argLinks.length > 0) {
-            data.argLinks.forEach(function (newLink) {
-                console.group("Adding argLink to graph");
-                graph = addLinkToGraph(graph, newLink);
-                console.groupEnd();
-            });
-        }
+        // if (data.argLinks.length > 0) {
+        //     data.argLinks.forEach(function (newLink) {
+        //         console.group("Adding argLink to graph");
+        //         graph = addLinkToGraph(graph, newLink);
+        //         console.groupEnd();
+
+        //     });
+        // }
+
 
         //4. give the arguments references to their sub claim objects: subLinks == subclaim(source) -> argument(target)
-        data.subLinks.forEach(function (subLink) {
-            //find the argument
-            var thisArgument = graph.nodes.find(function (node) {
-                return node.id == subLink.target;
-            });
+        // data.subLinks.forEach(function (subLink) {
+        //     //find the argument
+        //     var thisArgument = graph.nodes.find(function (node) {
+        //         return (node.id == subLink.target);
+        //     });
 
-            //check if it already has the sub claim
-            var subClaimIsLinked = thisArgument.subClaims.some(function (node) {
-                return node.id == subLink.source;
-            });
+        //     //check if it already has the sub claim
+        //     var subClaimIsLinked = thisArgument.subClaims.some(function (node) {
+        //         return (node.id == subLink.source)
+        //     });
 
-            if (!subClaimIsLinked) {
-                //find the subClaim (the source) that is referenced in this relationship
-                var subClaimToLink = data.subClaims.find(function (subClaim) {
-                    return subClaim.id == subLink.source;
-                });
+        //     if (!subClaimIsLinked) {
+        //         //find the subClaim (the source) that is referenced in this relationship
+        //         var subClaimToLink = data.subClaims.find(function (subClaim) {
+        //             return (subClaim.id == subLink.source);
+        //         });
 
-                thisArgument.subClaims.push(subClaimToLink);
-            }
-        });
+        //         thisArgument.subClaims.push(subClaimToLink);
+        //     }
+        // });
+
 
         //5 Add the up arguments to the graph data. (the ones the main claim is used in)
         // data.usedInArgs.forEach(function (argument) {
@@ -586,6 +601,11 @@ function addSubClaimToGraph(graph, argGroupNode, i) {
 }
 
 function addArgumentToGraph$1(graph, argument, data) {
+
+    console.log("data");
+    console.log(data);
+    console.log("data");
+
     var graphHasArgument = graph.nodes.some(function (node) {
         return node.id == argument.id;
     });
@@ -663,10 +683,17 @@ var d3v4graph = function () {
         var updateGraph;
 
         eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
+            console.log("Refresh graph");
             graph = graphDataConverter$1.convertDataFromIdApi(graph, data);
             updateGraph();
-            // simulation.alpha(0.5).alphaDecay(0.2);
             simulation.restart(); //restarts the simulation so any new nodes don't get stuck
+        });
+
+        eventManager.subscribe(actions.API_ARG_REQUEST_BY_ID_RETURNED, function (data) {
+
+            graph = graphDataConverter$1.convertArgDataFromIdApi(graph, data);
+            updateGraph();
+            simulation.restart();
         });
 
         var width = document.getElementById('d3v4').offsetWidth,
@@ -788,7 +815,9 @@ var d3v4graph = function () {
             claim.append("path").attr("d", arcButton(135, 225, function (d) {
                 return d.radius;
             })).on("click", function (event) {
-                eventManager.fire(actions.NODE_DOWN_CLICKED, event.id);
+                eventManager.fire(actions.ARG_REQUEST_BY_ID_SUBMITTED, event.id);
+            }).on("mousedown", function () {
+                d3.event.stopPropagation();
             });
 
             //add the text
@@ -883,8 +912,6 @@ var d3v4graph = function () {
             d.fy = d.y;
             simulation.alphaTarget(0.1);
         }
-
-        eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, '62'); //just to get us kicked off
     }
 };
 
@@ -971,7 +998,26 @@ eventManager.subscribe(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, function (claimid)
             eventManager.fire(actions.API_REQUEST_BY_ID_ERRORED, '404');
             return;
         }
+        //console.error('res.data', res.data);
         eventManager.fire(actions.API_REQUEST_BY_ID_RETURNED, res.data);
+    }).error(function (err) {
+        eventManager.fire(actions.API_REQUEST_BY_ID_ERRORED, err);
+        console.error('search error', err);
+    });
+});
+
+eventManager.subscribe(actions.ARG_REQUEST_BY_ID_SUBMITTED, function (claimid) {
+
+    //tell the world we're submitting a search (for spinners and the like)
+    eventManager.fire(actions.API_REQUEST_BY_ID_SUBMITTED, claimid);
+
+    $.ajax("http://localhost:3030/claims/" + claimid).done(function (res) {
+        if (!res.data.hasOwnProperty('claim')) {
+            eventManager.fire(actions.API_REQUEST_BY_ID_ERRORED, '404');
+            return;
+        }
+        //console.error('res.data', res.data);
+        eventManager.fire(actions.API_ARG_REQUEST_BY_ID_RETURNED, res.data);
     }).error(function (err) {
         eventManager.fire(actions.API_REQUEST_BY_ID_ERRORED, err);
         console.error('search error', err);
