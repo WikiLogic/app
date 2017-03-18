@@ -21,9 +21,9 @@ export default function () {
             simulation.restart(); //restarts the simulation so any new nodes don't get stuck
         });
 
-        eventManager.subscribe(actions.API_ARG_REQUEST_BY_ID_RETURNED, function (data) {
-
-            graph = graphDataConverter.convertArgDataFromIdApi(graph, data);
+        eventManager.subscribe(actions.API_ARG_REQUEST_BY_ID_RETURNED, function (dataAndOriginalId) {
+       
+            graph = graphDataConverter.convertArgDataFromIdApi(graph, dataAndOriginalId.data, dataAndOriginalId.claimid);
             updateGraph();
             simulation.restart(); 
         });
@@ -219,28 +219,28 @@ export default function () {
                 .attr("height", 100);
 
             //build the sub claims
-            var subClaim = argument.selectAll("div")
-                .data(function (d) { return d.subClaims; }); //bind it to the sub claims of an argument
+            // var subClaim = argument.selectAll("div")
+            //     .data(function (d) { return d.subClaims; }); //bind it to the sub claims of an argument
 
-            subClaim = subClaim.enter()
-                .append("xhtml:div") //create the selection
-                .attr("class", "chart__sub-claim");
+            // subClaim = subClaim.enter()
+            //     .append("xhtml:div") //create the selection
+            //     .attr("class", "chart__sub-claim");
 
-            subClaim.append("xhtml:div")
-                .attr("class", "chart__sub-claim-text")
-                .html(function (d) {
-                    return d.body;
-                });
+            // subClaim.append("xhtml:div")
+            //     .attr("class", "chart__sub-claim-text")
+            //     .html(function (d) {
+            //         return d.body;
+            //     });
 
-            subClaim.append("xhtml:div")
-                .attr("class", "chart__sub-claim-button")
-                .html("+")
-                .on("click", function (event) {
-                    eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, event.id);
-                })
-                .on("mousedown", function () {
-                    d3.event.stopPropagation();
-                });
+            // subClaim.append("xhtml:div")
+            //     .attr("class", "chart__sub-claim-button")
+            //     .html("+")
+            //     .on("click", function (event) {
+            //         eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, event.id);
+            //     })
+            //     .on("mousedown", function () {
+            //         d3.event.stopPropagation();
+            //     });
 
 
             //=========================== start the force layout

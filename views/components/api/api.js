@@ -47,8 +47,9 @@ eventManager.subscribe(actions.ARG_REQUEST_BY_ID_SUBMITTED, function (claimid) {
             eventManager.fire(actions.API_REQUEST_BY_ID_ERRORED, '404');
             return;
         }
-        //console.error('res.data', res.data);
-        eventManager.fire(actions.API_ARG_REQUEST_BY_ID_RETURNED, res.data);
+
+        var dataAndOriginalId = { data: res.data, claimid: claimid };
+        eventManager.fire(actions.API_ARG_REQUEST_BY_ID_RETURNED, dataAndOriginalId);
     }).error(function (err) {
         eventManager.fire(actions.API_REQUEST_BY_ID_ERRORED, err);
         console.error('search error', err);

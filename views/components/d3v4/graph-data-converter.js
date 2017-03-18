@@ -28,11 +28,23 @@ var claimInArgPadding = 5;
 
 export default {
 
-    convertArgDataFromIdApi: function (graph, data) {
+    convertArgDataFromIdApi: function (graph, data, claimid) {
+
+        var positionVector;
+
+        var claimClicked = graph.nodes.filter(function (node) {
+            return (node.id === claimid);
+        })[0];
+
+        if (claimClicked.usedInArg == undefined)
+            positionVector = { x: claimClicked.x, y: claimClicked.y + claimRad};
+        else positionVector = { x: claimClicked.usedInArg.x, y: claimClicked.usedInArg.y + claimClicked.usedInArg.radius };
+        
 
         //2.1 Add the arg group to graph data
         data.arguments.forEach(function (argument) {
-            graph = addArgumentToGraph(graph, argument, data);
+           
+            graph = addArgumentToGraph(graph, argument, data, positionVector);
         });
 
         return graph;
@@ -186,6 +198,7 @@ function addClaimToGraph(graph, claim) {
 function addSubClaimToGraph(graph, argGroupNode, i) {
 
     var claim = argGroupNode.subClaims[i];
+    claim.usedInArg = argGroupNode;
     claim.radius = claimRad;
     //check if the claim is already in the graph as a node, we don't want any duplicates!
     var graphHasClaim = graph.nodes.some(function (node) {
@@ -210,45 +223,45 @@ function addSubClaimToGraph(graph, argGroupNode, i) {
     };
 }
 
-function addArgumentToGraph(graph, argument, data) {
+function addArgumentToGraph(graph, argument, data, positionVector) {
 
-    console.log("graph", graph);
+    // var graphHasArgument = graph.nodes.some(function (node) {
+    //     return (node.id == argument.id);
+    // });
+    // if (graphHasArgument) {
+    //     return graph;
+    // }
+    // else {
+   
 
-    var graphHasArgument = graph.nodes.some(function (node) {
-        return (node.id == argument.id);
-    });
 
-    if (graphHasArgument) {
-        return graph;
-    }
-    else {
-        console.log("graph[0].nodes", graph.nodes[0].x);
-        var nextArgPosition = graph.nodes[0].x;
-        
-        argument.subClaims = data.subClaims; //an array for this argument to hold a reference to it's sub claim objects
 
-        var claimCount = data.subClaims.length;
-        var sqrRoot = Math.sqrt(claimCount);
-        argument.numbOfColumns = Math.floor(sqrRoot);
-        if (claimCount == 2 || claimCount == 3) argument.numbOfColumns = 2;//the rule doesnt work for 2 and 3 and im too dumb to know why yet.
-        argument.numbOfRows = Math.ceil(claimCount / argument.numbOfColumns);
+    var nextArgPosition = positionVector.x; 
 
-        //the radius needs to be such that all the arguments can be arranged in a square and teh square fits inside the circle
-        var lengthOfSquare = ((claimRad * 2) * argument.numbOfColumns) + (claimInArgPadding * (argument.numbOfColumns + 1));
-        //radisu of circle will be hypotenuse of the square
-        argument.radius = Math.sqrt((lengthOfSquare * lengthOfSquare) + (lengthOfSquare * lengthOfSquare)) / 2;
+    argument.subClaims = data.subClaims; //an array for this argument to hold a reference to it's sub claim objects
 
-        argument.x = nextArgPosition;
-        argument.y = graph.nodes[0].y + claimRad + argument.radius;
-        nextArgPosition += argument.radius;
+    var claimCount = data.subClaims.length;
+    var sqrRoot = Math.sqrt(claimCount);
+    argument.numbOfColumns = Math.floor(sqrRoot);
+    if (claimCount == 2 || claimCount == 3) argument.numbOfColumns = 2;//the rule doesnt work for 2 and 3 and im too dumb to know why yet.
+    argument.numbOfRows = Math.ceil(claimCount / argument.numbOfColumns);
 
-        graph.nodes.push(argument);
+    //the radius needs to be such that all the arguments can be arranged in a square and teh square fits inside the circle
+    var lengthOfSquare = ((claimRad * 2) * argument.numbOfColumns) + (claimInArgPadding * (argument.numbOfColumns + 1));
+    //radisu of circle will be hypotenuse of the square
+    argument.radius = Math.sqrt((lengthOfSquare * lengthOfSquare) + (lengthOfSquare * lengthOfSquare)) / 2;
 
-        for (var i = 0; i < argument.subClaims.length; i++) {
-            graph = addSubClaimToGraph(graph, argument, i);
-        };
-        return graph;
-    }
+    argument.x = nextArgPosition;
+    argument.y = positionVector.y + argument.radius;
+    nextArgPosition += argument.radius;
+
+    graph.nodes.push(argument);
+
+    for (var i = 0; i < argument.subClaims.length; i++) {
+        graph = addSubClaimToGraph(graph, argument, i);
+    };
+    return graph;
+ 
 }
 
 function addLinkToGraph(graph, newLink) {
