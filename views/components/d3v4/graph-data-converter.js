@@ -38,16 +38,14 @@ export default {
         //3. add the relationships between the claims and their arguments (if they haven't already been established).
         if (data.argLinks.length > 0){
             data.argLinks.forEach(function(newLink){
-                console.group("Adding argLink to graph");
                 graph = addLinkToGraph(graph, newLink);
-                console.groupEnd();
-
             });
         }
         
 
         //4. give the arguments references to their sub claim objects: subLinks == subclaim(source) -> argument(target)
         data.subLinks.forEach(function(subLink){ 
+            console.group("Adding subLink to graph");
             //find the argument
             var thisArgument = graph.nodes.find(function(node){
                 return (node.id == subLink.target);
@@ -66,6 +64,7 @@ export default {
 
                 thisArgument.subClaims.push(subClaimToLink);
             }
+            console.groupEnd();
         });
         
         
@@ -97,7 +96,7 @@ export default {
             if (isClaimInGraph(graph, subClaim)) {
                 console.log("This sub claim has been cloned into a REAL CLAIM!!");
 
-                //link it
+                //link it (there's a check for duplicate links in this function)
                 graph = addLinkToGraph(graph, {
                     type: "USED_IN",
                     source: subClaim.id,
@@ -125,6 +124,7 @@ function forEachArgSubClaimInGraph(graph, runThis){
 }
 
 function isClaimInGraph(graph, claim){
+
     return graph.nodes.some(function(node){
         if (node.type == "claim" && node.id == claim.id) {
             return true;
@@ -163,7 +163,7 @@ function addArgumentToGraph(graph, argument){
 }
 
 function addLinkToGraph(graph, newLink){
-    //if there are no links, it's probably not a duplicate :P
+    //if there are no links, it cannot be a duplicate
     if (graph.links.length == 0) {
         graph.links.push(newLink);
         return graph;
@@ -172,17 +172,18 @@ function addLinkToGraph(graph, newLink){
     //check if if newLink is already in the graph (using source and target)
     var graphAlreadyHasLink = false; //innocent until proven guilty
     graphAlreadyHasLink = graph.links.some(function(existingLink){
-        if (existingLink.source == newLink.source) {
+
+        if (existingLink.source.id == newLink.source) {
             //oh oh - half way to a match!
-            if (existingLink.target == newLink.target) {
-                return false; //that's a match, return false for the "some" to set the graphAlreadyHasLink to true
+            if (existingLink.target.id == newLink.target) {
+                return true; 
             }
         }
-        return true;
+        return false;
     });
 
     //now do the appropriate thing :)
-    if (!graphAlreadyHasLink) {
+    if (graphAlreadyHasLink) {
         return graph;
     } else {
         graph.links.push(newLink);

@@ -12,6 +12,7 @@ export default function () {
             nodes: [],
             links: []
         };
+        
         var updateGraph;
 
         eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function(data){
