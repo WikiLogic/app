@@ -431,10 +431,15 @@ var graphDataConverter$1 = {
         if (claimClicked.usedInArg == undefined) positionVector = { x: claimClicked.x, y: claimClicked.y + claimRad };else positionVector = { x: claimClicked.usedInArg.x, y: claimClicked.usedInArg.y + claimClicked.usedInArg.radius };
 
         //2.1 Add the arg group to graph data
-        data.arguments.forEach(function (argument) {
+        for (var i = 0; i < data.arguments.length; i++) {
+            graph = addArgumentToGraph$1(graph, data, i, positionVector);
+        }
 
-            graph = addArgumentToGraph$1(graph, argument, data, positionVector);
-        });
+        // //2.1 Add the arg group to graph data
+        // data.arguments.forEach(function (argument) {
+
+        //     graph = addArgumentToGraph(graph, argument, data, positionVector);
+        // });
 
         return graph;
     },
@@ -610,18 +615,17 @@ function addSubClaimToGraph(graph, argGroupNode, i) {
     }
 }
 
-function addArgumentToGraph$1(graph, argument, data, positionVector) {
+function addArgumentToGraph$1(graph, data, i, positionVector) {
 
-    // var graphHasArgument = graph.nodes.some(function (node) {
-    //     return (node.id == argument.id);
-    // });
-    // if (graphHasArgument) {
-    //     return graph;
-    // }
-    // else {
+    var argument = data.arguments[i];
 
+    var offsetFromLastArgGroup = 0;
+    //dont do or the first one
+    if (i > 0) {
+        offsetFromLastArgGroup = data.arguments[i - 1].radius * 2;
+    }
 
-    var nextArgPosition = positionVector.x;
+    var nextArgPosition = positionVector.x + offsetFromLastArgGroup;
 
     argument.subClaims = data.subClaims; //an array for this argument to hold a reference to it's sub claim objects
 
@@ -642,6 +646,7 @@ function addArgumentToGraph$1(graph, argument, data, positionVector) {
 
     graph.nodes.push(argument);
 
+    console.log("data", data);
     for (var i = 0; i < argument.subClaims.length; i++) {
         graph = addSubClaimToGraph(graph, argument, i);
     }
