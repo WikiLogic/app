@@ -32,7 +32,9 @@ eventManager.subscribe(actions.API_SEARCH_RETURNED, function(results){
     $('.js-search-result').off('click');
     $('.js-search-result').on('click', function(e){
         var thisClaimId = $(this).data('claimid');
-        console.log("result clicked!", thisClaimId );
+     
+        //console.log("thisClaimId", thisClaimId.id );
+        //eventManager.fire(actions.API_REQUEST_BY_ID_RETURNED, thisClaimId);
         eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, thisClaimId);
     });
 });

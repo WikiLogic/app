@@ -431,20 +431,17 @@ var graphDataConverter$1 = {
         if (claimClicked.usedInArg == undefined) positionVector = { x: claimClicked.x, y: claimClicked.y + claimRad };else positionVector = { x: claimClicked.usedInArg.x, y: claimClicked.usedInArg.y + claimClicked.usedInArg.radius };
 
         //2.1 Add the arg group to graph data
-        for (var i = 0; i < data.arguments.length; i++) {
-            graph = addArgumentToGraph$1(graph, data, i, positionVector);
+
+        var argumentsList = data['{arguments: collect(argument) }'].arguments;
+
+        for (var i = 0; i < argumentsList.length; i++) {
+            graph = addArgumentToGraph$1(graph, argumentsList, i, positionVector);
         }
-
-        // //2.1 Add the arg group to graph data
-        // data.arguments.forEach(function (argument) {
-
-        //     graph = addArgumentToGraph(graph, argument, data, positionVector);
-        // });
 
         return graph;
     },
 
-    convertDataFromIdApi: function (graph, data) {
+    convertClaimDataFromIdApi: function (graph, data) {
 
         //1. Add the main claim to the graph data.
         /*
@@ -453,120 +450,9 @@ var graphDataConverter$1 = {
          */
         graph = addClaimToGraph$1(graph, data.claim);
 
-        //2.1 Add the down arguments to the graph data.
-        // data.arguments.forEach(function (argument) {
-        //     graph = addArgumentToGraph(graph, argument);
-        // });
-
-        //2.1 Add the arg group to graph data
-        // data.arguments.forEach(function (argument) {
-        //     graph = addArgumentToGraph(graph, argument, data);
-        // });
-
-
-        //3. add the relationships between the claims and their arguments (if they haven't already been established).
-        // if (data.argLinks.length > 0) {
-        //     data.argLinks.forEach(function (newLink) {
-        //         console.group("Adding argLink to graph");
-        //         graph = addLinkToGraph(graph, newLink);
-        //         console.groupEnd();
-
-        //     });
-        // }
-
-
-        //4. give the arguments references to their sub claim objects: subLinks == subclaim(source) -> argument(target)
-        // data.subLinks.forEach(function (subLink) {
-        //     //find the argument
-        //     var thisArgument = graph.nodes.find(function (node) {
-        //         return (node.id == subLink.target);
-        //     });
-
-        //     //check if it already has the sub claim
-        //     var subClaimIsLinked = thisArgument.subClaims.some(function (node) {
-        //         return (node.id == subLink.source)
-        //     });
-
-        //     if (!subClaimIsLinked) {
-        //         //find the subClaim (the source) that is referenced in this relationship
-        //         var subClaimToLink = data.subClaims.find(function (subClaim) {
-        //             return (subClaim.id == subLink.source);
-        //         });
-
-        //         thisArgument.subClaims.push(subClaimToLink);
-        //     }
-        // });
-
-
-        //5 Add the up arguments to the graph data. (the ones the main claim is used in)
-        // data.usedInArgs.forEach(function (argument) {
-        //     graph = addArgumentToGraph(graph, argument);
-        // });
-
-        //6 add the relationships between the main claim and those arguments
-        if (data.usedInLinks.length > 0) {
-            //TODO check for duplicates... ?
-            data.usedInLinks.forEach(function (usedInLink) {
-                graph = addLinkToGraph(graph, usedInLink);
-            });
-        }
-
-        //7. all the claims that make up those arguments too
-        if (data.usedInSiblings.length > 0) {
-            data.usedInSiblings.forEach(function (sibling) {
-                graph = addClaimToGraph$1(graph, sibling);
-            });
-        }
-
-        //8. and the links from those siblings to the used in arguments
-        if (data.usedInSiblingLinks.length > 0) {
-            data.usedInSiblingLinks.forEach(function (usedInSiblingLink) {
-                graph = addLinkToGraph(graph, usedInSiblingLink);
-            });
-        }
-
-        //8. Now that all is said and done. Check if any of the claims we just added exist in any argument groups already there
-        //loop through all the arguments & their sub claims
-        forEachArgSubClaimInGraph(graph, function (subClaim, argNode) {
-
-            //check if the sub claim exists as an individual claim node in the graph
-            if (isClaimInGraph(graph, subClaim)) {
-                console.log("This sub claim has been cloned into a REAL CLAIM!!");
-
-                //link it
-                graph = addLinkToGraph(graph, {
-                    type: "USED_IN",
-                    source: subClaim.id,
-                    target: argNode.id
-                });
-            }
-        });
-
         return graph;
     }
 };
-
-function forEachArgSubClaimInGraph(graph, runThis) {
-    //run through all the nodes
-    graph.nodes.forEach(function (argNode) {
-        //but only do stuff for the argument noeds
-        if (argNode.type == "argument") {
-            //loop through the sub claims in this argument
-            argNode.subClaims.forEach(function (subClaim) {
-                //and pass the function the sub claim... and the argument node for good measure
-                runThis(subClaim, argNode);
-            });
-        }
-    });
-}
-
-function isClaimInGraph(graph, claim) {
-    return graph.nodes.some(function (node) {
-        if (node.type == "claim" && node.id == claim.id) {
-            return true;
-        }
-    });
-}
 
 function addClaimToGraph$1(graph, claim) {
     //check if the claim is already in the graph as a node, we don't want any duplicates!
@@ -584,6 +470,7 @@ function addClaimToGraph$1(graph, claim) {
         claim.radius = claimRad;
 
         graph.nodes.push(claim);
+
         return graph;
     }
 }
@@ -615,21 +502,21 @@ function addSubClaimToGraph(graph, argGroupNode, i) {
     }
 }
 
-function addArgumentToGraph$1(graph, data, i, positionVector) {
+function addArgumentToGraph$1(graph, argumentsList, i, positionVector) {
 
-    var argument = data.arguments[i];
+    console.log("arguments", argumentsList);
+
+    var argument = argumentsList[i];
 
     var offsetFromLastArgGroup = 0;
     //dont do or the first one
     if (i > 0) {
-        offsetFromLastArgGroup = data.arguments[i - 1].radius * 2;
+        offsetFromLastArgGroup = argumentsList[i - 1].radius * 2;
     }
 
     var nextArgPosition = positionVector.x + offsetFromLastArgGroup;
 
-    argument.subClaims = data.subClaims; //an array for this argument to hold a reference to it's sub claim objects
-
-    var claimCount = data.subClaims.length;
+    var claimCount = argument.subClaims.length;
     var sqrRoot = Math.sqrt(claimCount);
     argument.numbOfColumns = Math.floor(sqrRoot);
     if (claimCount == 2 || claimCount == 3) argument.numbOfColumns = 2; //the rule doesnt work for 2 and 3 and im too dumb to know why yet.
@@ -646,39 +533,11 @@ function addArgumentToGraph$1(graph, data, i, positionVector) {
 
     graph.nodes.push(argument);
 
-    console.log("data", data);
+    //console.log("data", data);
     for (var i = 0; i < argument.subClaims.length; i++) {
         graph = addSubClaimToGraph(graph, argument, i);
     }
     return graph;
-}
-
-function addLinkToGraph(graph, newLink) {
-    //if there are no links, it's probably not a duplicate :P
-    if (graph.links.length == 0) {
-        graph.links.push(newLink);
-        return graph;
-    }
-
-    //check if if newLink is already in the graph (using source and target)
-    var graphAlreadyHasLink = false; //innocent until proven guilty
-    graphAlreadyHasLink = graph.links.some(function (existingLink) {
-        if (existingLink.source == newLink.source) {
-            //oh oh - half way to a match!
-            if (existingLink.target == newLink.target) {
-                return false; //that's a match, return false for the "some" to set the graphAlreadyHasLink to true
-            }
-        }
-        return true;
-    });
-
-    //now do the appropriate thing :)
-    if (!graphAlreadyHasLink) {
-        return graph;
-    } else {
-        graph.links.push(newLink);
-        return graph;
-    }
 }
 
 /* The magic number settings for the mysterious force layout.
@@ -695,18 +554,18 @@ var d3v4graph = function () {
         };
         var updateGraph;
 
-        eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
-            console.log("Refresh graph");
-            graph = graphDataConverter$1.convertDataFromIdApi(graph, data);
-            updateGraph();
-            simulation.restart(); //restarts the simulation so any new nodes don't get stuck
-        });
-
         eventManager.subscribe(actions.API_ARG_REQUEST_BY_ID_RETURNED, function (dataAndOriginalId) {
 
             graph = graphDataConverter$1.convertArgDataFromIdApi(graph, dataAndOriginalId.data, dataAndOriginalId.claimid);
             updateGraph();
             simulation.restart();
+        });
+
+        eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
+
+            graph = graphDataConverter$1.convertClaimDataFromIdApi(graph, data);
+            updateGraph();
+            simulation.restart(); //restarts the simulation so any new nodes don't get stuck
         });
 
         var width = document.getElementById('d3v4').offsetWidth,
@@ -793,7 +652,7 @@ var d3v4graph = function () {
 
             //claim node selection
             var claim = node.filter(function (d) {
-                return d.type == "claim";
+                return d.type == "Claim";
             }).selectAll("g").data(function (node) {
                 return [node];
             });
@@ -841,7 +700,7 @@ var d3v4graph = function () {
 
             //the argument nodes selection
             var argument = node.filter(function (d) {
-                return d.type == "argument";
+                return d.type == "ArgGroup";
             }).selectAll("g").data(function (node) {
                 return [node];
             });
@@ -986,7 +845,9 @@ eventManager.subscribe(actions.API_SEARCH_RETURNED, function (results) {
     $('.js-search-result').off('click');
     $('.js-search-result').on('click', function (e) {
         var thisClaimId = $(this).data('claimid');
-        console.log("result clicked!", thisClaimId);
+
+        //console.log("thisClaimId", thisClaimId.id );
+        //eventManager.fire(actions.API_REQUEST_BY_ID_RETURNED, thisClaimId);
         eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, thisClaimId);
     });
 });
@@ -1031,11 +892,11 @@ eventManager.subscribe(actions.ARG_REQUEST_BY_ID_SUBMITTED, function (claimid) {
     //tell the world we're submitting a search (for spinners and the like)
     eventManager.fire(actions.API_REQUEST_BY_ID_SUBMITTED, claimid);
 
-    $.ajax("http://localhost:3030/claims/" + claimid).done(function (res) {
-        if (!res.data.hasOwnProperty('claim')) {
-            eventManager.fire(actions.API_REQUEST_BY_ID_ERRORED, '404');
-            return;
-        }
+    $.ajax("http://localhost:3030/args/" + claimid).done(function (res) {
+        // if (!res.data.hasOwnProperty('claim')) {
+        //     eventManager.fire(actions.API_REQUEST_BY_ID_ERRORED, '404');
+        //     return;
+        // }
 
         var dataAndOriginalId = { data: res.data, claimid: claimid };
         eventManager.fire(actions.API_ARG_REQUEST_BY_ID_RETURNED, dataAndOriginalId);

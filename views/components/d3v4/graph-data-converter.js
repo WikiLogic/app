@@ -41,20 +41,17 @@ export default {
         else positionVector = { x: claimClicked.usedInArg.x, y: claimClicked.usedInArg.y + claimClicked.usedInArg.radius };
 
         //2.1 Add the arg group to graph data
-        for (var i = 0; i < data.arguments.length; i++) {
-            graph = addArgumentToGraph(graph, data, i, positionVector);
+
+        var argumentsList = data['{arguments: collect(argument) }'].arguments;
+      
+        for (var i = 0; i < argumentsList.length; i++) {
+            graph = addArgumentToGraph(graph, argumentsList, i, positionVector);
         }
-
-        // //2.1 Add the arg group to graph data
-        // data.arguments.forEach(function (argument) {
-
-        //     graph = addArgumentToGraph(graph, argument, data, positionVector);
-        // });
 
         return graph;
     },
 
-    convertDataFromIdApi: function (graph, data) {
+    convertClaimDataFromIdApi: function (graph, data) {
 
         //1. Add the main claim to the graph data.
         /*
@@ -62,95 +59,6 @@ export default {
         Therefore the first claim can be hard set with a position. Later positions will be based on whats immediately above it.
          */
         graph = addClaimToGraph(graph, data.claim);
-
-        //2.1 Add the down arguments to the graph data.
-        // data.arguments.forEach(function (argument) {
-        //     graph = addArgumentToGraph(graph, argument);
-        // });
-
-        //2.1 Add the arg group to graph data
-        // data.arguments.forEach(function (argument) {
-        //     graph = addArgumentToGraph(graph, argument, data);
-        // });
-
-
-        //3. add the relationships between the claims and their arguments (if they haven't already been established).
-        // if (data.argLinks.length > 0) {
-        //     data.argLinks.forEach(function (newLink) {
-        //         console.group("Adding argLink to graph");
-        //         graph = addLinkToGraph(graph, newLink);
-        //         console.groupEnd();
-
-        //     });
-        // }
-
-
-        //4. give the arguments references to their sub claim objects: subLinks == subclaim(source) -> argument(target)
-        // data.subLinks.forEach(function (subLink) {
-        //     //find the argument
-        //     var thisArgument = graph.nodes.find(function (node) {
-        //         return (node.id == subLink.target);
-        //     });
-
-        //     //check if it already has the sub claim
-        //     var subClaimIsLinked = thisArgument.subClaims.some(function (node) {
-        //         return (node.id == subLink.source)
-        //     });
-
-        //     if (!subClaimIsLinked) {
-        //         //find the subClaim (the source) that is referenced in this relationship
-        //         var subClaimToLink = data.subClaims.find(function (subClaim) {
-        //             return (subClaim.id == subLink.source);
-        //         });
-
-        //         thisArgument.subClaims.push(subClaimToLink);
-        //     }
-        // });
-
-
-        //5 Add the up arguments to the graph data. (the ones the main claim is used in)
-        // data.usedInArgs.forEach(function (argument) {
-        //     graph = addArgumentToGraph(graph, argument);
-        // });
-
-        //6 add the relationships between the main claim and those arguments
-        if (data.usedInLinks.length > 0) {
-            //TODO check for duplicates... ?
-            data.usedInLinks.forEach(function (usedInLink) {
-                graph = addLinkToGraph(graph, usedInLink);
-            });
-        }
-
-        //7. all the claims that make up those arguments too
-        if (data.usedInSiblings.length > 0) {
-            data.usedInSiblings.forEach(function (sibling) {
-                graph = addClaimToGraph(graph, sibling);
-            });
-        }
-
-        //8. and the links from those siblings to the used in arguments
-        if (data.usedInSiblingLinks.length > 0) {
-            data.usedInSiblingLinks.forEach(function (usedInSiblingLink) {
-                graph = addLinkToGraph(graph, usedInSiblingLink);
-            });
-        }
-
-        //8. Now that all is said and done. Check if any of the claims we just added exist in any argument groups already there
-        //loop through all the arguments & their sub claims
-        forEachArgSubClaimInGraph(graph, function (subClaim, argNode) {
-
-            //check if the sub claim exists as an individual claim node in the graph
-            if (isClaimInGraph(graph, subClaim)) {
-                console.log("This sub claim has been cloned into a REAL CLAIM!!");
-
-                //link it
-                graph = addLinkToGraph(graph, {
-                    type: "USED_IN",
-                    source: subClaim.id,
-                    target: argNode.id
-                });
-            }
-        });
 
         return graph;
     }
@@ -195,6 +103,7 @@ function addClaimToGraph(graph, claim) {
         claim.radius = claimRad;
 
         graph.nodes.push(claim);
+
         return graph;
     };
 }
@@ -227,22 +136,21 @@ function addSubClaimToGraph(graph, argGroupNode, i) {
     };
 }
 
-function addArgumentToGraph(graph, data, i, positionVector) {
+function addArgumentToGraph(graph, argumentsList, i, positionVector) {
 
-    var argument = data.arguments[i];
+    console.log("arguments", argumentsList);
+
+    var argument = argumentsList[i];
 
     var offsetFromLastArgGroup = 0;
     //dont do or the first one
     if (i > 0) {
-        offsetFromLastArgGroup = (data.arguments[i - 1].radius*2);
+        offsetFromLastArgGroup = (argumentsList[i - 1].radius*2);
     }
  
-
     var nextArgPosition = positionVector.x + offsetFromLastArgGroup;
 
-    argument.subClaims = data.subClaims; //an array for this argument to hold a reference to it's sub claim objects
-
-    var claimCount = data.subClaims.length;
+    var claimCount = argument.subClaims.length;
     var sqrRoot = Math.sqrt(claimCount);
     argument.numbOfColumns = Math.floor(sqrRoot);
     if (claimCount == 2 || claimCount == 3) argument.numbOfColumns = 2;//the rule doesnt work for 2 and 3 and im too dumb to know why yet.
@@ -259,7 +167,7 @@ function addArgumentToGraph(graph, data, i, positionVector) {
 
     graph.nodes.push(argument);
 
-    console.log("data", data);
+    //console.log("data", data);
     for (var i = 0; i < argument.subClaims.length; i++) {
         graph = addSubClaimToGraph(graph, argument, i);
     };

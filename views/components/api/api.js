@@ -42,11 +42,11 @@ eventManager.subscribe(actions.ARG_REQUEST_BY_ID_SUBMITTED, function (claimid) {
     //tell the world we're submitting a search (for spinners and the like)
     eventManager.fire(actions.API_REQUEST_BY_ID_SUBMITTED, claimid);
 
-    $.ajax("http://localhost:3030/claims/" + claimid).done(function (res) {
-        if (!res.data.hasOwnProperty('claim')) {
-            eventManager.fire(actions.API_REQUEST_BY_ID_ERRORED, '404');
-            return;
-        }
+    $.ajax("http://localhost:3030/args/" + claimid).done(function (res) {
+        // if (!res.data.hasOwnProperty('claim')) {
+        //     eventManager.fire(actions.API_REQUEST_BY_ID_ERRORED, '404');
+        //     return;
+        // }
 
         var dataAndOriginalId = { data: res.data, claimid: claimid };
         eventManager.fire(actions.API_ARG_REQUEST_BY_ID_RETURNED, dataAndOriginalId);

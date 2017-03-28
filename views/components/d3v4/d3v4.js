@@ -14,18 +14,18 @@ export default function () {
         };
         var updateGraph;
 
-        eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
-            console.log("Refresh graph");
-            graph = graphDataConverter.convertDataFromIdApi(graph, data);
-            updateGraph();
-            simulation.restart(); //restarts the simulation so any new nodes don't get stuck
-        });
-
         eventManager.subscribe(actions.API_ARG_REQUEST_BY_ID_RETURNED, function (dataAndOriginalId) {
-       
+
             graph = graphDataConverter.convertArgDataFromIdApi(graph, dataAndOriginalId.data, dataAndOriginalId.claimid);
             updateGraph();
-            simulation.restart(); 
+            simulation.restart();
+        });
+
+        eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
+          
+            graph = graphDataConverter.convertClaimDataFromIdApi(graph, data);
+            updateGraph();
+            simulation.restart(); //restarts the simulation so any new nodes don't get stuck
         });
 
         var width = document.getElementById('d3v4').offsetWidth,
@@ -125,9 +125,11 @@ export default function () {
                 .on("drag", dragged)
                 .on("end", dragended));
 
+            
+
             //claim node selection
             var claim = node
-                .filter(function (d) { return (d.type == "claim"); })
+                .filter(function (d) { return (d.type == "Claim"); })
                 .selectAll("g")
                 .data(function (node) { return [node]; });
 
@@ -196,7 +198,7 @@ export default function () {
 
             //the argument nodes selection
             var argument = node
-                .filter(function (d) { return (d.type == "argument"); })
+                .filter(function (d) { return (d.type == "ArgGroup"); })
                 .selectAll("g")
                 .data(function (node) { return [node]; });
 
@@ -273,9 +275,7 @@ export default function () {
                 //     .attr("cy", function (d) { return d.y; })
                 //make a relationship array for clones (claims that are in an argument & have their own node).
             }
-
         };
-
 
         function dragstarted(d) {
             simulation.restart();
