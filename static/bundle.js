@@ -695,7 +695,7 @@ var d3v4graph = function () {
             //add the text
             claim.append("g").attr("class", "chart__claim-body-g").attr("transform", "translate(0,0)").append("switch").append("foreignObject") //needs a width and height
             .attr("width", 100).attr("height", 100).attr("x", -50).attr("y", -50).append("xhtml:div").attr("class", "chart__claim-text").html(function (d) {
-                return d.text;
+                return d.text + " (" + d.probability + ")";
             });
 
             //the argument nodes selection
@@ -713,6 +713,10 @@ var d3v4graph = function () {
 
             argument = argument.append("foreignObject") //needs a width and height
             .attr("width", 160).attr("height", 100);
+
+            argument = argument.append("xhtml:div").attr("class", "chart__claim-text").html(function (d) {
+                return "ArgGroup (" + d.probability + ")";
+            });
 
             //=========================== start the force layout
             simulation.nodes(graph.nodes).on("tick", ticked);

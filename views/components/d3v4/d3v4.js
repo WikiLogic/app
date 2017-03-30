@@ -174,12 +174,7 @@ export default function () {
                 .on("mousedown", function () {
                     d3.event.stopPropagation();
                 });
-
-
-
-
-
-
+                
             //add the text
             claim.append("g")
                 .attr("class", "chart__claim-body-g")
@@ -193,7 +188,7 @@ export default function () {
                 .append("xhtml:div")
                 .attr("class", "chart__claim-text")
                 .html(function (d) {
-                    return d.text;
+                    return d.text + " ("+ d.probability +")";
                 });
 
             //the argument nodes selection
@@ -213,13 +208,17 @@ export default function () {
                 .attr("transform", "translate(0,0)")
                 .append("switch");
 
-
-
             argument = argument
                 .append("foreignObject")//needs a width and height
                 .attr("width", 160)
                 .attr("height", 100);
 
+            argument = argument
+                .append("xhtml:div")
+                .attr("class", "chart__claim-text")
+                .html(function (d) {
+                    return "ArgGroup (" + d.probability + ")";
+                });
 
             //=========================== start the force layout
             simulation
