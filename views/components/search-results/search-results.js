@@ -12,12 +12,15 @@ eventManager.subscribe(actions.API_SEARCH_RETURNED, function(results){
     var resultsMarkup = ``;
     
     results.claims.forEach(function(claim){
+
         //for now, random number between 1 and 100 for the status
-        var status = Math.floor((Math.random() * 100) + 1);
+        console.log("claim", claim);
+        console.log("claim.probability", claim.probability);
+        var status = claim.probability;
         resultsMarkup += `
             <div class="search-result js-search-result" data-claimid="${claim.id}">
-                <div class="search-result__body">
-                ${claim.body}
+                <div class="search-result__text">
+                ${claim.text}
                 </div>
                 <div class="search-result__status-wrap">
                     <div class="search-result__status-bar search-result__status-bar--${status}"></div>

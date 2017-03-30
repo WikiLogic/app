@@ -695,7 +695,7 @@ var d3v4graph = function () {
             //add the text
             claim.append("g").attr("class", "chart__claim-body-g").attr("transform", "translate(0,0)").append("switch").append("foreignObject") //needs a width and height
             .attr("width", 100).attr("height", 100).attr("x", -50).attr("y", -50).append("xhtml:div").attr("class", "chart__claim-text").html(function (d) {
-                return d.body;
+                return d.text;
             });
 
             //the argument nodes selection
@@ -713,31 +713,6 @@ var d3v4graph = function () {
 
             argument = argument.append("foreignObject") //needs a width and height
             .attr("width", 160).attr("height", 100);
-
-            //build the sub claims
-            // var subClaim = argument.selectAll("div")
-            //     .data(function (d) { return d.subClaims; }); //bind it to the sub claims of an argument
-
-            // subClaim = subClaim.enter()
-            //     .append("xhtml:div") //create the selection
-            //     .attr("class", "chart__sub-claim");
-
-            // subClaim.append("xhtml:div")
-            //     .attr("class", "chart__sub-claim-text")
-            //     .html(function (d) {
-            //         return d.body;
-            //     });
-
-            // subClaim.append("xhtml:div")
-            //     .attr("class", "chart__sub-claim-button")
-            //     .html("+")
-            //     .on("click", function (event) {
-            //         eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, event.id);
-            //     })
-            //     .on("mousedown", function () {
-            //         d3.event.stopPropagation();
-            //     });
-
 
             //=========================== start the force layout
             simulation.nodes(graph.nodes).on("tick", ticked);
@@ -825,12 +800,15 @@ eventManager.subscribe(actions.API_SEARCH_RETURNED, function (results) {
     var resultsMarkup = ``;
 
     results.claims.forEach(function (claim) {
+
         //for now, random number between 1 and 100 for the status
-        var status = Math.floor(Math.random() * 100 + 1);
+        console.log("claim", claim);
+        console.log("claim.probability", claim.probability);
+        var status = claim.probability;
         resultsMarkup += `
             <div class="search-result js-search-result" data-claimid="${ claim.id }">
-                <div class="search-result__body">
-                ${ claim.body }
+                <div class="search-result__text">
+                ${ claim.text }
                 </div>
                 <div class="search-result__status-wrap">
                     <div class="search-result__status-bar search-result__status-bar--${ status }"></div>
