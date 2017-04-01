@@ -648,7 +648,11 @@ var d3v4graph = function () {
             node = node.enter().append("g") //this created the individual node wrapper group
             .merge(node); //returns the selection of nodes merged with the new data
 
-            node.call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended));
+            // node.call(d3.drag()
+            //     .on("start", dragstarted)
+            //     .on("drag", dragged)
+            //     .on("end", dragended));
+
 
             //claim node selection
             var claim = node.filter(function (d) {
@@ -665,32 +669,68 @@ var d3v4graph = function () {
                 return d3.arc().innerRadius(50).outerRadius(radius).startAngle(start * (Math.PI / 180)).endAngle(end * (Math.PI / 180));
             };
 
-            //Up button
-            claim.append("path").attr("d", arcButton(-45, 45, function (d) {
-                return d.radius;
-            })).on("click", function (event) {
-                eventManager.fire(actions.NODE_UP_CLICKED, event.id);
-            });
-            //right button
-            claim.append("path").attr("d", arcButton(45, 135, function (d) {
-                return d.radius;
-            })).on("click", function (event) {
-                eventManager.fire(actions.NODE_RIGHT_CLICKED, event.id);
-            });
-            //left button
-            claim.append("path").attr("d", arcButton(-135, -45, function (d) {
-                return d.radius;
-            })).on("click", function (event) {
-                eventManager.fire(actions.NODE_LEFT_CLICKED, event.id);
-            });
-            //down button
-            claim.append("path").attr("d", arcButton(135, 225, function (d) {
-                return d.radius;
-            })).on("click", function (event) {
-                eventManager.fire(actions.ARG_REQUEST_BY_ID_SUBMITTED, event.id);
+            var highlight = claim.append("circle").attr("class", "node").on("click", function (event) {
+                console.log("event", event);
+                console.log("claim", claim);
+                //Up button
+                simulation.select(this).append("path").attr("d", arcButton(-45, 45, function (d) {
+                    return d.radius;
+                })).on("click", function (event) {
+                    eventManager.fire(actions.NODE_UP_CLICKED, event.id);
+                });
+                //right button
+                claim.append("path").attr("d", arcButton(45, 135, function (d) {
+                    return d.radius;
+                })).on("click", function (event) {
+                    eventManager.fire(actions.NODE_RIGHT_CLICKED, event.id);
+                });
+                //left button
+                claim.append("path").attr("d", arcButton(-135, -45, function (d) {
+                    return d.radius;
+                })).on("click", function (event) {
+                    eventManager.fire(actions.NODE_LEFT_CLICKED, event.id);
+                });
+                //down button
+                claim.append("path").attr("d", arcButton(135, 225, function (d) {
+                    return d.radius;
+                })).on("click", function (event) {
+                    eventManager.fire(actions.ARG_REQUEST_BY_ID_SUBMITTED, event.id);
+                }).on("mousedown", function () {
+                    d3.event.stopPropagation();
+                });
             }).on("mousedown", function () {
                 d3.event.stopPropagation();
-            });
+            }).attr("r", function (d) {
+                return d.radius;
+            }).style("opacity", 0.5);
+
+            // //Up button
+            // claim.append("path")
+            //     .attr("d", arcButton(-45, 45, function (d) { return d.radius; }))
+            //     .on("click", function (event) {
+            //         eventManager.fire(actions.NODE_UP_CLICKED, event.id);
+            //     });
+            // //right button
+            // claim.append("path")
+            //     .attr("d", arcButton(45, 135, function (d) { return d.radius; }))
+            //     .on("click", function (event) {
+            //         eventManager.fire(actions.NODE_RIGHT_CLICKED, event.id);
+            //     });
+            // //left button
+            // claim.append("path")
+            //     .attr("d", arcButton(-135, -45, function (d) { return d.radius; }))
+            //     .on("click", function (event) {
+            //         eventManager.fire(actions.NODE_LEFT_CLICKED, event.id);
+            //     });
+            // //down button
+            // claim.append("path")
+            //     .attr("d", arcButton(135, 225, function (d) { return d.radius; }))
+            //     .on("click", function (event) {
+            //         eventManager.fire(actions.ARG_REQUEST_BY_ID_SUBMITTED, event.id);
+            //     })
+            //     .on("mousedown", function () {
+            //         d3.event.stopPropagation();
+            //     });
 
             //add the text
             claim.append("g").attr("class", "chart__claim-body-g").attr("transform", "translate(0,0)").append("switch").append("foreignObject") //needs a width and height
@@ -720,11 +760,6 @@ var d3v4graph = function () {
 
             //=========================== start the force layout
             simulation.nodes(graph.nodes).on("tick", ticked);
-            // simulation.force("link")
-            //     .links(graph.links);
-            //this is read for the initial value
-            // simulation.force("xAxis", d3.forceY(function (d) { return d.x; }))
-            //     .force("yAxis", d3.forceY(function (d) { return d.y; }));
 
             function ticked() {
                 link.selectAll("line").attr("x1", function (d) {
@@ -746,30 +781,26 @@ var d3v4graph = function () {
                 node.attr("transform", function (d) {
                     return "translate(" + d.x + "," + d.y + ")";
                 });
-
-                // node.attr("cx", 600)//function (d) { return d.x; })
-                //     .attr("cy", function (d) { return d.y; })
-                //make a relationship array for clones (claims that are in an argument & have their own node).
             }
         };
 
-        function dragstarted(d) {
-            simulation.restart();
-            simulation.alpha(1.0);
-            d.fx = d.x;
-            d.fy = d.y;
-        }
+        // function dragstarted(d) {
+        //     simulation.restart();
+        //     simulation.alpha(1.0);
+        //     d.fx = d.x;
+        //     d.fy = d.y;
+        // }
 
-        function dragged(d) {
-            d.fx = d3.event.x;
-            d.fy = d3.event.y;
-        }
+        // function dragged(d) {
+        //     d.fx = d3.event.x;
+        //     d.fy = d3.event.y;
+        // }
 
-        function dragended(d) {
-            d.fx = d.x;
-            d.fy = d.y;
-            simulation.alphaTarget(0.1);
-        }
+        // function dragended(d) {
+        //     d.fx = d.x;
+        //     d.fy = d.y;
+        //     simulation.alphaTarget(0.1);
+        // }
     }
 };
 
