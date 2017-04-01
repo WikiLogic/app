@@ -152,16 +152,22 @@ export default function () {
             claim.append("circle")
                 .attr("class", "node")
                     .on("click", function (event) {
+                        console.log("this", this);
                         console.log("event", event);
                         console.log("claim", claim);
+                        console.log("everything that's passed here", arguments);
+
+                        var thisClaim = d3.select(this).enter();
+                        console.log("thisClaim", thisClaim);
+                        //var thisClaim = claim.enter();
                         //Up button
-                        simulation.select(this).append("path")
+                        thisClaim.append("path")
                             .attr("d", arcButton(-45, 45, function (d) { return d.radius; }))
                             .on("click", function (event) {
                                 eventManager.fire(actions.NODE_UP_CLICKED, event.id);
                             });
                         //right button
-                        claim.append("path")
+                        thisClaim.append("path")
                             .attr("d", arcButton(45, 135, function (d) { return d.radius; }))
                             .on("click", function (event) {
                                 eventManager.fire(actions.NODE_RIGHT_CLICKED, event.id);
