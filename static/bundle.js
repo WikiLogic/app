@@ -548,10 +548,16 @@ function addArgumentToGraph$1(graph, argumentsList, i, positionVector) {
 var d3v4graph = function () {
     if (document.getElementById('d3v4')) {
 
-        var graph = {
-            nodes: [],
-            links: []
+        var getNewGraph = function () {
+            var newGraph = {
+                nodes: [],
+                links: []
+            };
+            return newGraph;
         };
+
+        var graph = getNewGraph();
+
         var updateGraph;
 
         eventManager.subscribe(actions.API_ARG_REQUEST_BY_ID_RETURNED, function (dataAndOriginalId) {
@@ -563,6 +569,11 @@ var d3v4graph = function () {
 
         eventManager.subscribe(actions.API_REQUEST_BY_ID_RETURNED, function (data) {
 
+            //remove old results
+            node.selectAll("*").remove();
+            graph = getNewGraph();
+
+            //load new one
             graph = graphDataConverter$1.convertClaimDataFromIdApi(graph, data);
             updateGraph();
             simulation.restart(); //restarts the simulation so any new nodes don't get stuck
@@ -653,33 +664,17 @@ var d3v4graph = function () {
             //     .on("drag", dragged)
             //     .on("end", dragended));
 
-
-            //claim node selection
-            var claim = node.filter(function (d) {
-                return d.type == "Claim";
-            }).selectAll("g").data(function (node) {
-                return [node];
-            });
-
-            //wrap it
-            claim = claim.enter().append("g").attr("class", "chart__claim");
-
             //make the buttons - quarter arcs
             var arcButton = function (start, end, radius) {
                 return d3.arc().innerRadius(50).outerRadius(radius).startAngle(start * (Math.PI / 180)).endAngle(end * (Math.PI / 180));
             };
 
-            claim.append("circle").attr("class", "node").attr("r", function (d) {
-                return d.radius;
-            }).style("opacity", 0.2).style("fill", function (d) {
-                if (d.probability > 50) return "green";else return "red";
-            }).on("click", function (event) {
-
+            var Highlight = function (event, selected) {
                 //clear all old claim highlights in this group
                 claim.selectAll("path").remove();
 
                 //get this specificily clicked claim
-                var thisClaim = d3.select(this.parentNode);
+                var thisClaim = d3.select(selected.parentNode);
 
                 //Up button
                 thisClaim.append("path").attr("stroke", "grey").attr("d", arcButton(-45, 45, function (d) {
@@ -707,43 +702,7 @@ var d3v4graph = function () {
                 }).on("mousedown", function () {
                     d3.event.stopPropagation();
                 });
-            }).on("mousedown", function () {
-                d3.event.stopPropagation();
-            });
-
-            // //Up button
-            // claim.append("path")
-            //     .attr("d", arcButton(-45, 45, function (d) { return d.radius; }))
-            //     .on("click", function (event) {
-            //         eventManager.fire(actions.NODE_UP_CLICKED, event.id);
-            //     });
-            // //right button
-            // claim.append("path")
-            //     .attr("d", arcButton(45, 135, function (d) { return d.radius; }))
-            //     .on("click", function (event) {
-            //         eventManager.fire(actions.NODE_RIGHT_CLICKED, event.id);
-            //     });
-            // //left button
-            // claim.append("path")
-            //     .attr("d", arcButton(-135, -45, function (d) { return d.radius; }))
-            //     .on("click", function (event) {
-            //         eventManager.fire(actions.NODE_LEFT_CLICKED, event.id);
-            //     });
-            // //down button
-            // claim.append("path")
-            //     .attr("d", arcButton(135, 225, function (d) { return d.radius; }))
-            //     .on("click", function (event) {
-            //         eventManager.fire(actions.ARG_REQUEST_BY_ID_SUBMITTED, event.id);
-            //     })
-            //     .on("mousedown", function () {
-            //         d3.event.stopPropagation();
-            //     });
-
-            //add the text
-            claim.append("g").attr("class", "chart__claim-body-g").attr("transform", "translate(0,0)").append("switch").append("foreignObject") //needs a width and height
-            .attr("width", 100).attr("height", 100).attr("x", -50).attr("y", -50).append("xhtml:div").attr("class", "chart__claim-text").html(function (d) {
-                return d.text + " (" + d.probability + ")";
-            });
+            };
 
             //the argument nodes selection
             var argument = node.filter(function (d) {
@@ -765,6 +724,32 @@ var d3v4graph = function () {
 
             argument = argument.append("xhtml:div").attr("class", "chart__claim-text").html(function (d) {
                 return "ArgGroup (" + d.probability + ")";
+            });
+
+            //claim node selection
+            var claim = node.filter(function (d) {
+                return d.type == "Claim";
+            }).selectAll("g").data(function (node) {
+                return [node];
+            });
+
+            //wrap it
+            claim = claim.enter().append("g").attr("class", "chart__claim");
+
+            claim.append("circle").attr("class", "node").attr("r", function (d) {
+                return d.radius;
+            }).style("opacity", 0.2).style("fill", function (d) {
+                if (d.probability > 50) return "green";else return "red";
+            }).on("click", function (event) {
+                Highlight(event, this);
+            }).on("mousedown", function () {
+                d3.event.stopPropagation();
+            });
+
+            //add the text
+            claim.append("g").attr("class", "chart__claim-body-g").attr("transform", "translate(0,0)").append("switch").append("foreignObject") //needs a width and height
+            .attr("width", 100).attr("height", 100).attr("x", -50).attr("y", -50).append("xhtml:div").attr("class", "chart__claim-text").html(function (d) {
+                return d.text + " (" + d.probability + ")";
             });
 
             //=========================== start the force layout
@@ -845,9 +830,6 @@ eventManager.subscribe(actions.API_SEARCH_RETURNED, function (results) {
 
     results.claims.forEach(function (claim) {
 
-        //for now, random number between 1 and 100 for the status
-        console.log("claim", claim);
-        console.log("claim.probability", claim.probability);
         var status = claim.probability;
         resultsMarkup += `
             <div class="search-result js-search-result" data-claimid="${ claim.id }">
@@ -868,8 +850,6 @@ eventManager.subscribe(actions.API_SEARCH_RETURNED, function (results) {
     $('.js-search-result').on('click', function (e) {
         var thisClaimId = $(this).data('claimid');
 
-        //console.log("thisClaimId", thisClaimId.id );
-        //eventManager.fire(actions.API_REQUEST_BY_ID_RETURNED, thisClaimId);
         eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, thisClaimId);
     });
 });

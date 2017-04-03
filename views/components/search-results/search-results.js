@@ -13,9 +13,6 @@ eventManager.subscribe(actions.API_SEARCH_RETURNED, function(results){
     
     results.claims.forEach(function(claim){
 
-        //for now, random number between 1 and 100 for the status
-        console.log("claim", claim);
-        console.log("claim.probability", claim.probability);
         var status = claim.probability;
         resultsMarkup += `
             <div class="search-result js-search-result" data-claimid="${claim.id}">
@@ -36,8 +33,6 @@ eventManager.subscribe(actions.API_SEARCH_RETURNED, function(results){
     $('.js-search-result').on('click', function(e){
         var thisClaimId = $(this).data('claimid');
      
-        //console.log("thisClaimId", thisClaimId.id );
-        //eventManager.fire(actions.API_REQUEST_BY_ID_RETURNED, thisClaimId);
         eventManager.fire(actions.CLAIM_REQUEST_BY_ID_SUBMITTED, thisClaimId);
     });
 });
