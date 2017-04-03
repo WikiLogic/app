@@ -674,36 +674,33 @@ var d3v4graph = function () {
             }).style("opacity", 0.2).style("fill", function (d) {
                 if (d.probability > 50) return "green";else return "red";
             }).on("click", function (event) {
-                console.log("this", this);
-                console.log("event", event);
-                console.log("claim", claim);
-                console.log("everything that's passed here", arguments);
 
-                var thisClaim = d3.select(this).enter();
-                thisClaim.append("circle").attr("class", "node").attr("r", 10).style("opacity", 0.5);
+                //clear all old claim highlights in this group
+                claim.selectAll("path").remove();
 
-                console.log("thisClaim", thisClaim);
-                //var thisClaim = claim.enter();
+                //get this specificily clicked claim
+                var thisClaim = d3.select(this.parentNode);
+
                 //Up button
-                claim.append("path").attr("stroke", "grey").attr("d", arcButton(-45, 45, function (d) {
+                thisClaim.append("path").attr("stroke", "grey").attr("d", arcButton(-45, 45, function (d) {
                     return d.radius;
                 })).on("click", function (event) {
                     eventManager.fire(actions.NODE_UP_CLICKED, event.id);
                 });
                 //right button
-                claim.append("path").attr("stroke", "grey").attr("d", arcButton(45, 135, function (d) {
+                thisClaim.append("path").attr("stroke", "grey").attr("d", arcButton(45, 135, function (d) {
                     return d.radius;
                 })).on("click", function (event) {
                     eventManager.fire(actions.NODE_RIGHT_CLICKED, event.id);
                 });
                 //left button
-                claim.append("path").attr("stroke", "grey").attr("d", arcButton(-135, -45, function (d) {
+                thisClaim.append("path").attr("stroke", "grey").attr("d", arcButton(-135, -45, function (d) {
                     return d.radius;
                 })).on("click", function (event) {
                     eventManager.fire(actions.NODE_LEFT_CLICKED, event.id);
                 });
                 //down button
-                claim.append("path").attr("stroke", "grey").attr("d", arcButton(135, 225, function (d) {
+                thisClaim.append("path").attr("stroke", "grey").attr("d", arcButton(135, 225, function (d) {
                     return d.radius;
                 })).on("click", function (event) {
                     eventManager.fire(actions.ARG_REQUEST_BY_ID_SUBMITTED, event.id);
