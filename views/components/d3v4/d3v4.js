@@ -146,54 +146,64 @@ export default function () {
                     .startAngle(start * (Math.PI / 180))
                     .endAngle(end * (Math.PI / 180));
             }
-
-            var highlight = 
-
+     
             claim.append("circle")
                 .attr("class", "node")
-                    .on("click", function (event) {
-                        console.log("this", this);
-                        console.log("event", event);
-                        console.log("claim", claim);
-                        console.log("everything that's passed here", arguments);
+                .attr("r", function (d) { return d.radius; })
+                .style("opacity", 0.2)
+                .style("fill", function (d) {
+                    if (d.probability > 50) return "green";
+                    else return "red";
+                })
+                .on("click", function (event) {
+                    console.log("this", this);
+                    console.log("event", event);
+                    console.log("claim", claim);
+                    console.log("everything that's passed here", arguments);
 
-                        var thisClaim = d3.select(this).enter();
-                        console.log("thisClaim", thisClaim);
-                        //var thisClaim = claim.enter();
-                        //Up button
-                        thisClaim.append("path")
-                            .attr("d", arcButton(-45, 45, function (d) { return d.radius; }))
-                            .on("click", function (event) {
-                                eventManager.fire(actions.NODE_UP_CLICKED, event.id);
-                            });
-                        //right button
-                        thisClaim.append("path")
-                            .attr("d", arcButton(45, 135, function (d) { return d.radius; }))
-                            .on("click", function (event) {
-                                eventManager.fire(actions.NODE_RIGHT_CLICKED, event.id);
-                            });
-                        //left button
-                        claim.append("path")
-                            .attr("d", arcButton(-135, -45, function (d) { return d.radius; }))
-                            .on("click", function (event) {
-                                eventManager.fire(actions.NODE_LEFT_CLICKED, event.id);
-                            });
-                        //down button
-                        claim.append("path")
-                            .attr("d", arcButton(135, 225, function (d) { return d.radius; }))
-                            .on("click", function (event) {
-                                eventManager.fire(actions.ARG_REQUEST_BY_ID_SUBMITTED, event.id);
-                            })
-                            .on("mousedown", function () {
-                                d3.event.stopPropagation();
-                            });
-                    })
+                    var thisClaim = d3.select(this).enter();
+                    thisClaim.append("circle")
+                        .attr("class", "node")
+                        .attr("r", 10)
+                        .style("opacity", 0.5)
+
+                    console.log("thisClaim", thisClaim);
+                    //var thisClaim = claim.enter();
+                    //Up button
+                    claim.append("path")
+                        .attr("stroke", "grey")
+                        .attr("d", arcButton(-45, 45, function (d) { return d.radius; }))
+                        .on("click", function (event) {
+                            eventManager.fire(actions.NODE_UP_CLICKED, event.id);
+                        });
+                    //right button
+                    claim.append("path")
+                        .attr("stroke", "grey")
+                        .attr("d", arcButton(45, 135, function (d) { return d.radius; }))
+                        .on("click", function (event) {
+                            eventManager.fire(actions.NODE_RIGHT_CLICKED, event.id);
+                        });
+                    //left button
+                    claim.append("path")
+                        .attr("stroke", "grey")
+                        .attr("d", arcButton(-135, -45, function (d) { return d.radius; }))
+                        .on("click", function (event) {
+                            eventManager.fire(actions.NODE_LEFT_CLICKED, event.id);
+                        });
+                    //down button
+                    claim.append("path")
+                        .attr("stroke", "grey")
+                        .attr("d", arcButton(135, 225, function (d) { return d.radius; }))
+                        .on("click", function (event) {
+                            eventManager.fire(actions.ARG_REQUEST_BY_ID_SUBMITTED, event.id);
+                        })
+                        .on("mousedown", function () {
+                            d3.event.stopPropagation();
+                        });
+                })
                 .on("mousedown", function () {
                     d3.event.stopPropagation();
-                })
-                .attr("r", function (d) { return d.radius; })
-                .style("opacity", 0.5)
-                ;
+                });
 
 
             // //Up button
@@ -249,7 +259,11 @@ export default function () {
             argument.enter().append("circle")
                 .attr("class", "node")
                 .attr("r", function (d) { return d.radius; })
-                .style("opacity", 0.5);
+                .style("stroke", function (d) {
+                    if (d.probability > 50) return "green";
+                    else return "red";
+                });
+
 
             argument = argument.enter()
                 .append("g")
