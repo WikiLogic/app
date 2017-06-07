@@ -1,12 +1,12 @@
-
+# (depreciated) go to http://wikilogic.github.io
 
 To plan!
 
 ---
 
-##Local set up
+## Local set up
 
-####Install:
+#### Install:
  
  - `npm install`
  - `npm install -g rollup`
@@ -17,14 +17,14 @@ Some thing that might help if it doesn't work straight off:
  - `npm install -g node-sass`
  - `npm rebuild node-sass`
 
-####Run:
+#### Run:
 
  - `npm start`
 
 
 ---
 
-#The components:
+# The components:
 
 ### `work-space`
 A high level container for holding claims & their connections in a mind map style.
